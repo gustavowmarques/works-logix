@@ -1,0 +1,16 @@
+<h3>Create a New Work Order</h3>
+<form method="POST" action="{{ url_for('create_work_order') }}">
+  <div class="mb-3">
+    <label for="title" class="form-label">Title</label>
+    <input type="text" class="form-control" name="title" id="title" required>
+  </div>
+  <div class="mb-3">
+    <label for="description" class="form-label">Description</label>
+    <textarea class="form-control" name="description" id="description" rows="3" required></textarea>
+  </div>
+  <div class="mb-3">
+    <label for="created_by" class="form-label">Created By</label>
+    <input type="text" class="form-control" name="created_by" id="created_by" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Submit Work Order</button>
+</form>
