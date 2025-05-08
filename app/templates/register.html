@@ -3,25 +3,75 @@
 <h2>Register</h2>
 <form method="POST">
   <div class="mb-3">
-    <label for="username">Username</label>
+    <label>Username</label>
     <input class="form-control" name="username" required>
   </div>
   <div class="mb-3">
-    <label for="email">Email</label>
+    <label>Email</label>
     <input class="form-control" type="email" name="email" required>
   </div>
   <div class="mb-3">
-    <label for="password" class="form-label">Password</label>
-    <input class="form-control" type="password" name="password" required minlength="6" required>
+    <label>Password</label>
+    <input class="form-control" type="password" name="password" required>
   </div>
   <div class="mb-3">
     <label for="role">Role</label>
-    <select class="form-select" name="role" required>
+    <select class="form-select" name="role" id="roleSelect" required onchange="toggleContractorFields()">
+      <option value="">Select Role</option>
       <option value="admin">Admin</option>
       <option value="manager">Property Manager</option>
       <option value="contractor">Contractor</option>
     </select>
   </div>
+
+  <!-- Contractor-only fields -->
+  <div id="contractorFields" style="display: none;">
+    <div class="mb-3">
+      <label>Company Name</label>
+      <input class="form-control" name="company_name">
+    </div>
+    <div class="mb-3">
+      <label>Company Registration Number</label>
+      <input class="form-control" name="company_registration_number">
+    </div>
+    <div class="mb-3">
+      <label>Telephone</label>
+      <input class="form-control" name="telephone">
+    </div>
+    <div class="mb-3">
+      <label>Accounts Contact Name</label>
+      <input class="form-control" name="accounts_contact_name">
+    </div>
+    <div class="mb-3">
+      <label>Accounts Contact Email</label>
+      <input class="form-control" type="email" name="accounts_contact_email">
+    </div>
+    <div class="mb-3">
+      <label>Business Type</label>
+      <select class="form-select" name="business_type">
+        <option value="plumbing">Plumbing</option>
+        <option value="electrical">Electrical</option>
+        <option value="security">Security</option>
+        <option value="landscaping">Landscaping</option>
+        <option value="cleaning">Cleaning</option>
+        <option value="waste collection">Waste Collection</option>
+        <option value="pest control">Pest Control</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Address</label>
+      <input class="form-control" name="contractor_address">
+    </div>
+  </div>
+
   <button type="submit" class="btn btn-primary">Register</button>
 </form>
+
+<script>
+function toggleContractorFields() {
+  const role = document.getElementById('roleSelect').value;
+  const contractorSection = document.getElementById('contractorFields');
+  contractorSection.style.display = (role === 'contractor') ? 'block' : 'none';
+}
+</script>
 {% endblock %}
