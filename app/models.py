@@ -23,3 +23,27 @@ class User(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+class Client(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    registration_number = db.Column(db.String(50), nullable=False)
+    year_built = db.Column(db.Integer, nullable=False)
+    number_of_units = db.Column(db.Integer, nullable=False)
+
+
+class Contractor(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    company_name = db.Column(db.String(100), nullable=False)
+    company_registration_number = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    telephone = db.Column(db.String(20), nullable=False)
+    accounts_contact_name = db.Column(db.String(100), nullable=False)
+    accounts_contact_email = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    business_type = db.Column(
+        db.String(50),
+        nullable=False
+    )  # plumbing, electrical, security, etc.
+

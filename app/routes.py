@@ -2,11 +2,15 @@ from flask import render_template, request, redirect, url_for
 from . import db
 from .models import WorkOrder
 from flask import current_app as app
+from flask_login import login_required
 
 @app.route('/')
+@login_required
 def home():
     orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
     return render_template('home.html', orders=orders)
+def root():
+    return redirect(url_for('login'))
 
 @app.route('/work-orders')
 def work_orders():
