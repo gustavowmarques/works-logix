@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, abort
-from .models import WorkOrder, Client
+from .models import WorkOrder, Client, Contractor
 from flask import current_app as app
 from flask_login import login_required, current_user
 from . import db
@@ -47,14 +47,31 @@ def work_orders():
     orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
     return render_template('work_orders.html', orders=orders)
 
-@app.route('/work-orders/create', methods=['POST'])
+@app.route('/work-orders/create', methods=['GET', 'POST'])
 @login_required
 def create_work_order():
-    title = request.form['title']
-    description = request.form['description']
-    created_by = request.form['created_by']
-    new_order = WorkOrder(title=title, description=description, created_by=created_by)
-    db.session.add(new_order)
-    db.session.commit()
-    return redirect(url_for('home'))
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        created_by = current_user.username  # Prefer using session info
+        client_id = request.form['client_id']
+        contractor_id = request.form['contractor_id']
+
+        new_order = WorkOrder(
+            title=title,
+            description=description,
+            created_by=created_by,
+            client_id=client_id,
+            contractor_id=contractor_id
+        )
+        db.session.add(new_order)
+        db.session.commit()
+        flash('Work order created successfully.')
+        return redirect(url_for('home'))
+
+    # Handle GET – load dropdown options
+    clients = Client.query.all()
+    contractors = Contractor.query.all()
+    return render_template('partials/create_work_order.html', clients=clients, contractors=contractors)
+
 

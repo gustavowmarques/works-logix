@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
 from flask_login import LoginManager
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -19,6 +20,9 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+
+    migrate = Migrate()
+    migrate.init_app(app, db)
 
     with app.app_context():
         from . import routes, models, auth  # make sure auth.py exists

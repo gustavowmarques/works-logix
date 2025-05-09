@@ -1,44 +1,42 @@
-<h3>Create a New Work Order</h3>
-<form method="POST" action="{{ url_for('create_work_order') }}">
-    <div class="dropdown mb-3">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Select Client
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          <a class="dropdown-item" href="#"></a>
-          <a class="dropdown-item" href="#"></a>
-          <a class="dropdown-item" href="#"></a>
-        </div>
-    </div>
-    <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Select Contractor
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-          <a class="dropdown-item" href="#"></a>
-          <a class="dropdown-item" href="#"></a>
-          <a class="dropdown-item" href="#"></a>
-        </div>
-    </div>
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Create Work Order</h2>
+  <form method="POST">
     <div class="mb-3">
-    <label for="title" class="form-label">Brief Description</label>
-    <input type="text" class="form-control" name="title" id="title" required>
-  </div>
-  <div class="mb-3">
-    <label for="description" class="form-label">Works Required</label>
-    <textarea class="form-control" name="description" id="description" rows="3" required></textarea>
-  </div>
-  <div class="mb-3">
-    <label for="description" class="form-label">Owner's Address</label>
-    <textarea class="form-control" name="description" id="description" rows="3" required></textarea>
-  </div>
-  <div class="mb-3">
-    <label for="title" class="form-label">Contact Number</label>
-    <input type="text" class="form-control" name="title" id="title" required>
-  </div>
-  <div class="mb-3">
-    <label for="created_by" class="form-label">Created By</label>
-    <input type="text" class="form-control" name="created_by" id="created_by" required>
-  </div>
-  <button type="submit" class="btn btn-primary">Submit Work Order</button>
-</form>
+      <label for="title" class="form-label">Title</label>
+      <input type="text" class="form-control" id="title" name="title" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+    </div>
+
+    <!-- Client Dropdown -->
+    <div class="form-group mb-3">
+      <label for="client_id">Select Client</label>
+      <select class="form-control" id="client_id" name="client_id" required>
+        <option value="">-- Select Client --</option>
+        {% for client in clients %}
+          <option value="{{ client.id }}">{{ client.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Contractor Dropdown -->
+    <div class="form-group mb-3">
+      <label for="contractor_id">Select Contractor</label>
+      <select class="form-control" id="contractor_id" name="contractor_id" required>
+        <option value="">-- Select Contractor --</option>
+        {% for contractor in contractors %}
+          <option value="{{ contractor.id }}">{{ contractor.company_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Work Order</button>
+  </form>
+</div>
+{% endblock %}
