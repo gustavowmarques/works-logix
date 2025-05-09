@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Register</h2>
+<h2>Register New User</h2>
 <form method="POST">
   <div class="mb-3">
     <label>Username</label>
@@ -18,9 +18,9 @@
     <label for="role">Role</label>
     <select class="form-select" name="role" id="roleSelect" required onchange="toggleContractorFields()">
       <option value="">Select Role</option>
-      <option value="admin">Admin</option>
-      <option value="manager">Property Manager</option>
-      <option value="contractor">Contractor</option>
+      <option value="Admin">Administrator</option>
+      <option value="Property Manager">Property Manager</option>
+      <option value="Contractor">Contractor</option>
     </select>
   </div>
 
@@ -71,7 +71,7 @@
 function toggleContractorFields() {
   const role = document.getElementById('roleSelect').value;
   const contractorSection = document.getElementById('contractorFields');
-  contractorSection.style.display = (role === 'contractor') ? 'block' : 'none';
+  contractorSection.style.display = (role === 'Contractor') ? 'block' : 'none';
 }
 </script>
 {% endblock %}

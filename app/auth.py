@@ -36,6 +36,8 @@ def register():
         email = request.form['email']
         password = request.form['password']
         role = request.form['role']
+        if role == 'manager':
+            role = 'Property Manager'
 
         if User.query.filter_by(email=email).first():
             flash('Email already registered.')

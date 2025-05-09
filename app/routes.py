@@ -8,7 +8,7 @@ from . import db
 def root():
     return redirect(url_for('login'))  # Default landing page
 
-@app.route('/dashboard')
+@app.route('/home')
 @login_required
 def home():
     orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
