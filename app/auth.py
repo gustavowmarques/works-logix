@@ -3,6 +3,7 @@ from flask import render_template, redirect, url_for, flash, request, abort, cur
 from flask_login import login_user, logout_user, login_required, current_user
 from .models import User, Contractor
 from . import db
+from .roles import UserRole
 from werkzeug.security import generate_password_hash, check_password_hash
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -28,7 +29,7 @@ def register():
     user_count = User.query.count()
 
     # Safe role check to avoid AttributeError
-    if user_count > 0 and (not current_user.is_authenticated or current_user.role != 'admin'):
+    if user_count > 0 and (not current_user.is_authenticated or current_user.role != 'ROLE_ADMIN'):
         abort(403)
 
     if request.method == 'POST':
@@ -37,7 +38,7 @@ def register():
         password = request.form['password']
         role = request.form['role']
         if role == 'manager':
-            role = 'Property Manager'
+            role = ROLE_MANAGER
 
         if User.query.filter_by(email=email).first():
             flash('Email already registered.')
@@ -47,7 +48,7 @@ def register():
         user.set_password(password)
         db.session.add(user)
 
-        if role == 'contractor':
+        if role == ROLE_CONTRACTOR:
             company_name = request.form['company_name']
             company_registration_number = request.form['company_registration_number']
             telephone = request.form['telephone']

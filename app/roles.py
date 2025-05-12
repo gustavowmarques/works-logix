@@ -1,7 +1,8 @@
-# app/roles.py
+from enum import Enum
 
-ROLE_ADMIN = "Admin"
-ROLE_MANAGER = "Property Manager"
-ROLE_CONTRACTOR = "Contractor"
+class UserRole(Enum):
+    ADMIN = "Admin"
+    MANAGER = "Property Manager"
+    CONTRACTOR = "Contractor"
 
-ALL_ROLES = [ROLE_ADMIN, ROLE_MANAGER, ROLE_CONTRACTOR]
+ALL_ROLES = [role.value for role in UserRole]

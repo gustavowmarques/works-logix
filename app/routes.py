@@ -1,5 +1,6 @@
 from flask import render_template, request, redirect, url_for, flash, abort
 from .models import WorkOrder, Client, Contractor
+from .roles import UserRole
 from flask import current_app as app
 from flask_login import login_required, current_user
 from . import db
@@ -17,7 +18,7 @@ def home():
 @app.route('/register-client', methods=['GET', 'POST'])
 @login_required
 def register_client():
-    if current_user.role != 'admin':
+    if current_user.role != ROLE_ADMIN:
         abort(403)
 
     if request.method == 'POST':
@@ -77,7 +78,7 @@ def create_work_order():
 @app.route('/contractor/work-orders')
 @login_required
 def contractor_work_orders():
-    if current_user.role != 'Contractor':
+    if current_user.role == ROLE_CONTRACTOR:
         abort(403)
 
     work_orders = WorkOrder.query.filter_by(status='Open').all()

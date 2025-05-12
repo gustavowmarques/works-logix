@@ -71,7 +71,7 @@
 function toggleContractorFields() {
   const role = document.getElementById('roleSelect').value;
   const contractorSection = document.getElementById('contractorFields');
-  contractorSection.style.display = (role === 'Contractor') ? 'block' : 'none';
+  contractorSection.style.display = (role === ROLE_CONTRACTOR) ? 'block' : 'none';
 }
 </script>
 {% endblock %}
