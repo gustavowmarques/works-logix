@@ -1,0 +1,7 @@
+# app/roles.py
+
+ROLE_ADMIN = "Admin"
+ROLE_MANAGER = "Property Manager"
+ROLE_CONTRACTOR = "Contractor"
+
+ALL_ROLES = [ROLE_ADMIN, ROLE_MANAGER, ROLE_CONTRACTOR]

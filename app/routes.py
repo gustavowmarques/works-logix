@@ -74,4 +74,15 @@ def create_work_order():
     contractors = Contractor.query.all()
     return render_template('partials/create_work_order.html', clients=clients, contractors=contractors)
 
+@app.route('/contractor/work-orders')
+@login_required
+def contractor_work_orders():
+    if current_user.role != 'Contractor':
+        abort(403)
+
+    work_orders = WorkOrder.query.filter_by(status='Open').all()
+    return render_template('contractor_work_orders.html', work_orders=work_orders)
+
+
+
 
