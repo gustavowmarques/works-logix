@@ -4,6 +4,7 @@ from .roles import UserRole
 from flask import current_app as app
 from flask_login import login_required, current_user
 from . import db
+from app.roles import UserRole
 
 @app.route('/')
 def root():
@@ -18,7 +19,7 @@ def home():
 @app.route('/register-client', methods=['GET', 'POST'])
 @login_required
 def register_client():
-    if current_user.role != ROLE_ADMIN:
+    if current_user.role != UserRole.ADMIN:
         abort(403)
 
     if request.method == 'POST':
@@ -78,12 +79,32 @@ def create_work_order():
 @app.route('/contractor/work-orders')
 @login_required
 def contractor_work_orders():
-    if current_user.role == ROLE_CONTRACTOR:
+    if current_user.role != UserRole.CONTRACTOR:
         abort(403)
 
-    work_orders = WorkOrder.query.filter_by(status='Open').all()
-    return render_template('contractor_work_orders.html', work_orders=work_orders)
+    orders = WorkOrder.query.filter(
+        (WorkOrder.contractor_id == None) | 
+        (WorkOrder.contractor_id == current_user.id)
+    ).order_by(WorkOrder.created_at.desc()).all()
+    return render_template('contractor_work_orders.html', orders=orders)
 
+@app.route('/contractor/work-orders/<int:order_id>/accept', methods=['POST'])
+@login_required
+def accept_work_order(order_id):
+    if current_user.role != UserRole.CONTRACTOR:
+        abort(403)
+    
+    order = WorkOrder.query.get_or_404(order_id)
+    
+    if order.contractor_id:
+        flash("This work order has already been accepted.", "warning")
+    else:
+        order.contractor_id = current_user.id
+        order.status = "Accepted"
+        db.session.commit()
+        flash("You have accepted the work order.", "success")
+
+    return redirect(url_for('contractor_work_orders'))
 
 
 

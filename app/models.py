@@ -13,11 +13,12 @@ class WorkOrder(db.Model):
     status = db.Column(db.String(20), default='Open')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-    contractor_id = db.Column(db.Integer, db.ForeignKey('contractor.id'))
+    contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
     
     #backrefs for relationships
     client = db.relationship('Client', backref='work_orders')
-    contractor = db.relationship('Contractor', backref='assigned_orders')
+    contractor = db.relationship('User', foreign_keys=[contractor_id])
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)

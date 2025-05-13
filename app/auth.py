@@ -24,12 +24,13 @@ def login():
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
+@login_required
 def register():
-    from .models import User
-    user_count = User.query.count()
+    if current_user.role != UserRole.ADMIN:
+        return abort(403)
 
-    # Safe role check to avoid AttributeError
-    if user_count > 0 and (not current_user.is_authenticated or current_user.role != 'ROLE_ADMIN'):
+    user_count = User.query.count()
+    if user_count > 0 and (not current_user.is_authenticated or current_user.role != UserRole.ADMIN):
         abort(403)
 
     if request.method == 'POST':

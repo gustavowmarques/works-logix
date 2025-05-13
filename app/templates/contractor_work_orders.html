@@ -1,31 +1,36 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container mt-4">
-    <h2>Available Work Orders</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Created By</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for order in work_orders %}
-            <tr>
-                <td>{{ order.title }}</td>
-                <td>{{ order.description }}</td>
-                <td>{{ order.created_by }}</td>
-                <td>{{ order.status }}</td>
-                <td>
-                    <a href="#" class="btn btn-success btn-sm disabled">Accept</a>
-                    <a href="#" class="btn btn-danger btn-sm disabled">Reject</a>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="container">
+  <h2 class="mt-4">Available Work Orders</h2>
+  <table class="table mt-3">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Client</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>{{ order.title }}</td>
+        <td>{{ order.description }}</td>
+        <td>{{ order.client.name if order.client else 'N/A' }}</td>
+        <td>{{ order.status }}</td>
+        <td>
+          {% if not order.contractor_id %}
+            <form method="POST" action="{{ url_for('accept_work_order', order_id=order.id) }}">
+              <button type="submit" class="btn btn-success btn-sm">Accept</button>
+            </form>
+          {% else %}
+            <span class="badge bg-secondary">Accepted by you</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}
