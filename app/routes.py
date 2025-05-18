@@ -5,6 +5,8 @@ from flask import current_app as app
 from flask_login import login_required, current_user
 from app.extensions import db
 from sqlalchemy import or_, and_
+import os
+from werkzeug.utils import secure_filename
 
 routes_bp = Blueprint('routes', __name__)
 
@@ -143,17 +145,30 @@ def reject_work_order(order_id):
 
     return redirect(url_for('routes.contractor_work_orders'))
 
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'app', 'static', 'uploads')
 
-@routes_bp.route('/work-orders/complete/<int:order_id>', methods=['POST'])
+@routes_bp.route('/contractor/work-orders/<int:order_id>/complete', methods=['POST'])
 @login_required
 def complete_work_order(order_id):
-    order = WorkOrder.query.get_or_404(order_id)
-    if current_user.role != UserRole.CONTRACTOR or order.contractor != current_user:
+    if current_user.role != UserRole.CONTRACTOR:
         abort(403)
 
-    order.status = WorkOrderStatus.COMPLETED
+    order = WorkOrder.query.get_or_404(order_id)
+    if order.contractor_id != current_user.id:
+        abort(403)
+
+    # Handle file upload
+    if 'completion_photo' in request.files:
+        file = request.files['completion_photo']
+        if file.filename:
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(file_path)
+            order.completion_photo = filename
+
+    order.status = 'Completed'
     db.session.commit()
-    flash("Work order marked as completed.", "success")
+    flash('Work order marked as completed.', 'success')
     return redirect(url_for('routes.contractor_work_orders'))
 
 

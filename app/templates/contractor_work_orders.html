@@ -29,11 +29,20 @@
           <form action="{{ url_for('routes.reject_work_order', order_id=order.id) }}" method="post" style="display:inline; margin-left:5px;">
               <button type="submit" class="btn btn-danger btn-sm">Reject</button>
           </form>
-          {% elif order.contractor_id != current_user.id and order.contractor_id is not none %}
-              Assigned to another contractor.
           {% elif order.status == 'Accepted' and order.contractor_id == current_user.id %}
-              Accepted by you.
+            <form action="{{ url_for('routes.complete_work_order', order_id=order.id) }}" method="post" enctype="multipart/form-data">
+              <div class="mb-2">
+                <input type="file" name="completion_photo" class="form-control" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm">Mark Completed</button>
+            </form>
+          {% elif order.status == 'Completed' and order.contractor_id == current_user.id %}
+            <span class="text-success">Completed</span>
+            {% if order.completion_photo %}
+              <br><a href="{{ url_for('static', filename='uploads/' ~ order.completion_photo) }}" target="_blank">View Photo</a>
+            {% endif %}
           {% endif %}
+
         </td>
           </tr>
           {% endfor %}
