@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Work Order Details</h2>
+
+<ul>
+  <li><strong>Title:</strong> {{ order.title }}</li>
+  <li><strong>Description:</strong> {{ order.description }}</li>
+  <li><strong>Status:</strong> {{ order.status }}</li>
+  <li><strong>Created At:</strong> {{ order.created_at }}</li>
+  <li><strong>Client:</strong> 
+    <a href="{{ url_for('routes.client_detail', client_id=order.client.id) }}">
+      {{ order.client.name }}
+    </a>
+  </li>
+  <li><strong>Contractor:</strong> 
+    {% if order.contractor %}
+      <a href="{{ url_for('routes.contractor_detail', contractor_id=order.contractor.id) }}">
+        {{ order.contractor.company_name }}
+      </a>
+    {% else %}
+      <em>Unassigned</em>
+    {% endif %}
+  </li>
+  <li><strong>Occupant Apartment:</strong> {{ order.occupant_apartment or 'Not Provided' }}</li>
+  <li><strong>Occupant Contact:</strong> {{ order.occupant_contact or 'Not Provided' }}</li>
+
+  {% if order.completion_photo %}
+    <li><strong>Completion Photo:</strong><br><img src="{{ url_for('static', filename='uploads/' ~ order.completion_photo) }}" width="200"></li>
+  {% endif %}
+</ul>
+
+{% if current_user.role in ['Property Manager', 'Admin'] %}
+  {% if order.status == 'Completed' %}
+    <form action="{{ url_for('routes.reopen_work_order', order_id=order.id) }}" method="post">
+      <button class="btn btn-warning">Reopen Work Order</button>
+    </form>
+  {% endif %}
+
+  <form action="{{ url_for('routes.delete_work_order', order_id=order.id) }}" method="post" style="margin-top:10px;">
+    <button class="btn btn-danger" onclick="return confirm('Delete this work order?')">Delete Work Order</button>
+  </form>
+{% endif %}
+
+<a href="{{ url_for('routes.work_orders') }}" class="btn btn-secondary mt-3">Back to List</a>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Client Details</h2>
+<ul>
+  <li><strong>Name:</strong> {{ client.name }}</li>
+  <li><strong>Address:</strong> {{ client.address }}</li>
+  <li><strong>Registration No:</strong> {{ client.registration_number }}</li>
+  <li><strong>Year Built:</strong> {{ client.year_built }}</li>
+  <li><strong>No. of Units:</strong> {{ client.number_of_units }}</li>
+</ul>
+<a class="btn btn-secondary" href="{{ url_for('routes.work_orders') }}">Back</a>
+{% endblock %}

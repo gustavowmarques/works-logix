@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
-from app.models import WorkOrder, Client, Contractor, WorkOrderStatus
+from app.models import WorkOrder, Client, Contractor, WorkOrderStatus, User
 from app.roles import UserRole
 from flask import current_app as app
 from flask_login import login_required, current_user
@@ -56,7 +56,7 @@ def work_orders():
         abort(403)
 
     orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
-    return render_template('work_orders.html', orders=orders)
+    return render_template('partials/work_orders.html', orders=orders)
 
 
 @routes_bp.route('/work-orders/create', methods=['GET', 'POST'])
@@ -74,7 +74,9 @@ def create_work_order():
             description=description,
             created_by=created_by,
             client_id=client_id,
-            contractor_id=contractor_id
+            contractor_id=contractor_id,
+            occupant_apartment=occupant_apartment,
+            occupant_contact=occupant_contact
         )
         db.session.add(new_order)
         db.session.commit()
@@ -172,17 +174,39 @@ def complete_work_order(order_id):
     return redirect(url_for('routes.contractor_work_orders'))
 
 
-@routes_bp.route('/work-orders/reopen/<int:order_id>', methods=['POST'])
+@routes_bp.route('/work-orders/<int:order_id>/reopen', methods=['POST'])
 @login_required
 def reopen_work_order(order_id):
-    order = WorkOrder.query.get_or_404(order_id)
-    if current_user.role != UserRole.MANAGER:
+    if current_user.role not in [UserRole.MANAGER, UserRole.ADMIN]:
         abort(403)
 
-    order.status = WorkOrderStatus.OPEN
-    order.contractor = None
+    order = WorkOrder.query.get_or_404(order_id)
+
+    if order.status != 'Completed':
+        flash("Only completed work orders can be reopened.", "warning")
+        return redirect(url_for('routes.work_orders'))
+
+    order.status = 'Open'
+    order.contractor_id = None
+    order.completion_photo = None
     db.session.commit()
-    flash("Work order has been reopened.", "info")
-    return redirect(url_for('routes.home'))
+    flash("Work order has been reopened.", "success")
+    return redirect(url_for('routes.work_orders'))
 
+@routes_bp.route('/work-orders/<int:order_id>')
+@login_required
+def work_order_detail(order_id):
+    order = WorkOrder.query.get_or_404(order_id)
+    return render_template('work_order_detail.html', order=order)
 
+@routes_bp.route('/clients/<int:client_id>')
+@login_required
+def client_detail(client_id):
+    client = Client.query.get_or_404(client_id)
+    return render_template('client_detail.html', client=client)
+
+@routes_bp.route('/contractors/<int:contractor_id>')
+@login_required
+def contractor_detail(contractor_id):
+    contractor = User.query.get_or_404(contractor_id)
+    return render_template('contractor_detail.html', contractor=contractor)

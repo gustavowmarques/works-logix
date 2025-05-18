@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Contractor Details</h2>
+<ul class="list-group">
+  <li class="list-group-item"><strong>Company Name:</strong> {{ contractor.company_name }}</li>
+  <li class="list-group-item"><strong>Registration Number:</strong> {{ contractor.company_registration_number }}</li>
+  <li class="list-group-item"><strong>Email:</strong> {{ contractor.email }}</li>
+  <li class="list-group-item"><strong>Phone Number:</strong> {{ contractor.telephone_number }}</li>
+  <li class="list-group-item"><strong>Accounts Contact Name:</strong> {{ contractor.accounts_contact_name }}</li>
+  <li class="list-group-item"><strong>Accounts Contact Email:</strong> {{ contractor.accounts_contact_email }}</li>
+  <li class="list-group-item"><strong>Address:</strong> {{ contractor.address }}</li>
+  <li class="list-group-item"><strong>Business Type:</strong> {{ contractor.business_type }}</li>
+</ul>
+<a class="btn btn-secondary mt-3" href="{{ url_for('routes.work_orders') }}">Back to Work Orders</a>
+{% endblock %}

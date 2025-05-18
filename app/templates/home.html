@@ -5,7 +5,7 @@
     <h2>Work Orders</h2>
 
     {% if orders %}
-        <table class="table table-striped mt-3">
+        <table class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th>Title</th>
@@ -13,6 +13,9 @@
                     <th>Status</th>
                     <th>Created By</th>
                     <th>Created At</th>
+                    <th>Client</th>
+                    <th>Contractor</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,12 +26,29 @@
                     <td>{{ order.status }}</td>
                     <td>{{ order.created_by }}</td>
                     <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <a href="{{ url_for('routes.client_detail', client_id=order.client.id) }}">
+                        {{ order.client.name }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if order.contractor %}
+                        <a href="{{ url_for('routes.contractor_detail', contractor_id=order.contractor.id) }}">
+                            {{ order.contractor.company_name if order.contractor else '—' }}
+                        </a>
+                        {% else %}
+                        <em>Unassigned</em>
+                        {% endif %}
+                        </td>
+
+                    <td>
+                        <a class="btn btn-sm btn-primary" href="{{ url_for('routes.work_order_detail', order_id=order.id) }}">
+                            View
+                        </a>
+                    </td>
                 </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No work orders found.</p>
+            {% endfor %}
+        </tbody>
+    </table>
     {% endif %}
-</div>
 {% endblock %}

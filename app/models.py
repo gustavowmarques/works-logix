@@ -25,6 +25,9 @@ class WorkOrder(db.Model):
     contractor = db.relationship("User", backref="accepted_work_orders")
     rejected_by = db.Column(db.Integer, nullable=True)
     completion_photo = db.Column(db.String(200), nullable=True)
+    occupant_apartment = db.Column(db.String(120))
+    occupant_contact = db.Column(db.String(120))
+
 
 
 
