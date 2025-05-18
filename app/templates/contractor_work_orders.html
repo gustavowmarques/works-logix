@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
+
 {% block content %}
 <div class="container">
   <h2 class="mt-4">Available Work Orders</h2>
+  {% if orders %}
   <table class="table mt-3">
     <thead>
       <tr>
@@ -18,19 +20,27 @@
         <td>{{ order.title }}</td>
         <td>{{ order.description }}</td>
         <td>{{ order.client.name if order.client else 'N/A' }}</td>
-        <td>{{ order.status }}</td>
+        <td>{{ order.status.value }}</td>
         <td>
-          {% if not order.contractor_id %}
-            <form method="POST" action="{{ url_for('accept_work_order', order_id=order.id) }}">
+          {% if order.status == 'Open' and (order.contractor_id == None or order.contractor_id == current_user.id) %}
+          <form action="{{ url_for('routes.accept_work_order', order_id=order.id) }}" method="post" style="display:inline;">
               <button type="submit" class="btn btn-success btn-sm">Accept</button>
-            </form>
-          {% else %}
-            <span class="badge bg-secondary">Accepted by you</span>
+          </form>
+          <form action="{{ url_for('routes.reject_work_order', order_id=order.id) }}" method="post" style="display:inline; margin-left:5px;">
+              <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+          </form>
+          {% elif order.contractor_id != current_user.id and order.contractor_id is not none %}
+              Assigned to another contractor.
+          {% elif order.status == 'Accepted' and order.contractor_id == current_user.id %}
+              Accepted by you.
           {% endif %}
         </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+        <p>No work orders available at the moment.</p>
+      {% endif %}
 </div>
 {% endblock %}

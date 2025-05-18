@@ -1,36 +1,39 @@
-
-from flask import render_template, redirect, url_for, flash, request, abort, current_app as app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_user, logout_user, login_required, current_user
-from .models import User, Contractor
-from . import db
-from .roles import UserRole
 from werkzeug.security import generate_password_hash, check_password_hash
+from app.extensions import db, login_manager
+from app.models import User
+from app.roles import UserRole
 
-@app.route('/login', methods=['GET', 'POST'])
+auth_bp = Blueprint('auth', __name__)
+
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
         user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password_hash, password):
 
-        if user and user.check_password(password):
             login_user(user)
-            flash('Login successful.')
-            return redirect(url_for('home'))  # or another route you prefer
-
-        flash('Invalid email or password.')
-        return redirect(url_for('login'))
-
+            flash('Login successful.', 'success')
+            return redirect(url_for('routes.home'))
+        else:
+            flash('Invalid email or password.', 'danger')
     return render_template('login.html')
 
-@app.route('/register', methods=['GET', 'POST'])
+
+@auth_bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('auth.login'))
+
+@auth_bp.route('/register', methods=['GET', 'POST'])
 @login_required
 def register():
     if current_user.role != UserRole.ADMIN:
-        return abort(403)
-
-    user_count = User.query.count()
-    if user_count > 0 and (not current_user.is_authenticated or current_user.role != UserRole.ADMIN):
         abort(403)
 
     if request.method == 'POST':
@@ -38,48 +41,23 @@ def register():
         email = request.form['email']
         password = request.form['password']
         role = request.form['role']
-        if role == 'manager':
-            role = ROLE_MANAGER
 
-        if User.query.filter_by(email=email).first():
-            flash('Email already registered.')
-            return redirect(url_for('register'))
+        # Optional: normalize role input
+        if role.upper() == "CONTRACTOR":
+            role = UserRole.CONTRACTOR
+        elif role.upper() == "MANAGER":
+            role = UserRole.MANAGER
+        else:
+            role = UserRole.ADMIN
 
-        user = User(username=username, email=email, role=role)
-        user.set_password(password)
+        hashed_password = generate_password_hash(password)
+
+        user = User(username=username, email=email, password_hash=hashed_password, role=role)
         db.session.add(user)
-
-        if role == ROLE_CONTRACTOR:
-            company_name = request.form['company_name']
-            company_registration_number = request.form['company_registration_number']
-            telephone = request.form['telephone']
-            accounts_contact_name = request.form['accounts_contact_name']
-            accounts_contact_email = request.form['accounts_contact_email']
-            contractor_address = request.form['contractor_address']
-            business_type = request.form['business_type']
-
-            contractor = Contractor(
-                company_name=company_name,
-                company_registration_number=company_registration_number,
-                email=email,
-                telephone=telephone,
-                accounts_contact_name=accounts_contact_name,
-                accounts_contact_email=accounts_contact_email,
-                address=contractor_address,
-                business_type=business_type
-            )
-            db.session.add(contractor)
-
         db.session.commit()
-        flash('Registration successful. You can now log in.')
-        return redirect(url_for('login'))
+
+        flash("User registered successfully.", "success")
+        return redirect(url_for('routes.home'))
 
     return render_template('register.html')
 
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash('You have been logged out.')
-    return redirect(url_for('login'))
