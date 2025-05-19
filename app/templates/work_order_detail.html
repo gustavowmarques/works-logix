@@ -29,17 +29,15 @@
   {% endif %}
 </ul>
 
-{% if current_user.role in ['Property Manager', 'Admin'] %}
-  {% if order.status == 'Completed' %}
-    <form action="{{ url_for('routes.reopen_work_order', order_id=order.id) }}" method="post">
-      <button class="btn btn-warning">Reopen Work Order</button>
+{% if current_user.role == 'Property Manager' and order.status == 'Completed' %}
+    <form method="POST" action="{{ url_for('routes.reopen_work_order', order_id=order.id) }}">
+        <button type="submit" class="btn btn-warning">Reopen Work Order</button>
     </form>
-  {% endif %}
-
-  <form action="{{ url_for('routes.delete_work_order', order_id=order.id) }}" method="post" style="margin-top:10px;">
-    <button class="btn btn-danger" onclick="return confirm('Delete this work order?')">Delete Work Order</button>
-  </form>
 {% endif %}
+
+<form action="{{ url_for('routes.delete_work_order', order_id=order.id) }}" method="post" style="margin-top:10px;">
+  <button class="btn btn-danger" onclick="return confirm('Delete this work order?')">Delete Work Order</button>
+</form>
 
 <a href="{{ url_for('routes.work_orders') }}" class="btn btn-secondary mt-3">Back to List</a>
 {% endblock %}

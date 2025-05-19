@@ -177,21 +177,34 @@ def complete_work_order(order_id):
 @routes_bp.route('/work-orders/<int:order_id>/reopen', methods=['POST'])
 @login_required
 def reopen_work_order(order_id):
-    if current_user.role not in [UserRole.MANAGER, UserRole.ADMIN]:
+    if current_user.role != 'Property Manager':
         abort(403)
 
     order = WorkOrder.query.get_or_404(order_id)
 
     if order.status != 'Completed':
         flash("Only completed work orders can be reopened.", "warning")
-        return redirect(url_for('routes.work_orders'))
+        return redirect(url_for('routes.work_order_detail', order_id=order.id))
 
     order.status = 'Open'
     order.contractor_id = None
     order.completion_photo = None
     db.session.commit()
     flash("Work order has been reopened.", "success")
+    return redirect(url_for('routes.work_order_detail', order_id=order.id))
+
+@routes_bp.route('/work-orders/<int:order_id>/delete', methods=['POST'])
+@login_required
+def delete_work_order(order_id):
+    if current_user.role not in [UserRole.MANAGER, UserRole.ADMIN]:
+        abort(403)
+
+    order = WorkOrder.query.get_or_404(order_id)
+    db.session.delete(order)
+    db.session.commit()
+    flash("Work order deleted successfully.", "success")
     return redirect(url_for('routes.work_orders'))
+
 
 @routes_bp.route('/work-orders/<int:order_id>')
 @login_required
