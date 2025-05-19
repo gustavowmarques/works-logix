@@ -15,9 +15,9 @@
                     <th>Created At</th>
                     <th>Client</th>
                     <th>Contractor</th>
-                    <th>Actions</th>
                     <th>Occupant</th>
                     <th>Occupant Contact</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -42,14 +42,14 @@
                         <em>Unassigned</em>
                         {% endif %}
                         </td>
-
+                        <td>{{ order.occupant_apartment }}</td>
+                        <td>{{ order.occupant_contact }}</td>
                     <td>
                         <a class="btn btn-sm btn-primary" href="{{ url_for('routes.work_order_detail', order_id=order.id) }}">
                             View
                         </a>
                     </td>
-                    <td>{{ order.occupant_apartment }}</td>
-                    <td>{{ order.occupant_contact }}</td>
+
                 </tr>
             {% endfor %}
         </tbody>
