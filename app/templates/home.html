@@ -16,6 +16,8 @@
                     <th>Client</th>
                     <th>Contractor</th>
                     <th>Actions</th>
+                    <th>Occupant</th>
+                    <th>Occupant Contact</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,6 +48,8 @@
                             View
                         </a>
                     </td>
+                    <td>{{ order.occupant_apartment }}</td>
+                    <td>{{ order.occupant_contact }}</td>
                 </tr>
             {% endfor %}
         </tbody>

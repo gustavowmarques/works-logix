@@ -38,7 +38,7 @@
               {% elif current_user.role.value == ROLE_CONTRACTOR %}
 
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('routes.contractor_work_orders') }}">View Work Orders</a>
+                <a class="nav-link" href="{{ url_for('routes.home') }}">View Work Orders</a>
               </li>
             {% endif %}
           {% endif %}

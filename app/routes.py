@@ -52,11 +52,7 @@ def register_client():
 @routes_bp.route('/work-orders')
 @login_required
 def work_orders():
-    if current_user.role not in [UserRole.MANAGER, UserRole.ADMIN]:
-        abort(403)
-
-    orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
-    return render_template('partials/work_orders.html', orders=orders)
+    return redirect(url_for('routes.home'))
 
 
 @routes_bp.route('/work-orders/create', methods=['GET', 'POST'])
