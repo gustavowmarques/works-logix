@@ -64,6 +64,9 @@ def create_work_order():
         created_by = current_user.username  # Prefer using session info
         client_id = request.form['client_id']
         contractor_id = request.form['contractor_id']
+        occupant_apartment = request.form.get('occupant_apartment')
+        occupant_contact = request.form.get('occupant_contact')
+
 
         new_order = WorkOrder(
             title=title,
