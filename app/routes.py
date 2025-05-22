@@ -90,8 +90,9 @@ def create_work_order():
 @routes_bp.route('/contractor/work-orders')
 @login_required
 def contractor_work_orders():
-    if current_user.role != UserRole.CONTRACTOR:
+    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
         abort(403)
+
 
     orders = WorkOrder.query.filter(
         and_(
@@ -111,8 +112,9 @@ def contractor_work_orders():
 @routes_bp.route('/contractor/work-orders/<int:order_id>/accept', methods=['POST'])
 @login_required
 def accept_work_order(order_id):
-    if current_user.role != UserRole.CONTRACTOR:
+    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
         abort(403)
+
     
     order = WorkOrder.query.get_or_404(order_id)
     
@@ -131,8 +133,9 @@ def accept_work_order(order_id):
 @routes_bp.route('/contractor/work-orders/<int:order_id>/reject', methods=['POST'])
 @login_required
 def reject_work_order(order_id):
-    if current_user.role != UserRole.CONTRACTOR:
+    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
         abort(403)
+
 
     order = WorkOrder.query.get_or_404(order_id)
     if order.contractor_id == current_user.id or order.contractor_id is None:
@@ -151,8 +154,9 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), 'app', 'static', 'uploads')
 @routes_bp.route('/contractor/work-orders/<int:order_id>/complete', methods=['POST'])
 @login_required
 def complete_work_order(order_id):
-    if current_user.role != UserRole.CONTRACTOR:
+    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
         abort(403)
+
 
     order = WorkOrder.query.get_or_404(order_id)
     if order.contractor_id != current_user.id:
@@ -176,7 +180,7 @@ def complete_work_order(order_id):
 @routes_bp.route('/work-orders/<int:order_id>/reopen', methods=['POST'])
 @login_required
 def reopen_work_order(order_id):
-    if current_user.role != 'Property Manager':
+    if current_user.role not in [UserRole.MANAGER, UserRole.ADMIN]:
         abort(403)
 
     order = WorkOrder.query.get_or_404(order_id)
@@ -222,3 +226,52 @@ def client_detail(client_id):
 def contractor_detail(contractor_id):
     contractor = User.query.get_or_404(contractor_id)
     return render_template('contractor_detail.html', contractor=contractor)
+
+@routes_bp.route('/contractor/home')
+@login_required
+def contractor_home():
+    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
+        abort(403)
+
+
+    from app.models import WorkOrder
+
+    # Show orders that are either assigned to this contractor or unassigned
+    orders = WorkOrder.query.filter(
+        (WorkOrder.contractor_id == current_user.id) | (WorkOrder.contractor_id.is_(None))
+    ).order_by(WorkOrder.created_at.desc()).all()
+
+    return render_template('contractor_home.html', orders=orders)
+
+@routes_bp.route('/admin/dashboard')
+@login_required
+def admin_dashboard():
+    if current_user.role != UserRole.ADMIN:
+        flash("Access denied: Admins only.", "danger")
+        return redirect(url_for('auth.login'))
+
+    return render_template('admin_dashboard.html')
+
+@routes_bp.route('/admin/users')
+@login_required
+def view_all_users():
+    if current_user.role != UserRole.ADMIN:
+        flash("Access denied.", "danger")
+        return redirect(url_for('auth.login'))
+    return "<h2>Coming soon: User list</h2>"
+
+@routes_bp.route('/admin/clients')
+@login_required
+def view_all_clients():
+    if current_user.role != UserRole.ADMIN:
+        flash("Access denied.", "danger")
+        return redirect(url_for('auth.login'))
+    return "<h2>Coming soon: Client list</h2>"
+
+@routes_bp.route('/admin/contractors')
+@login_required
+def view_all_contractors():
+    if current_user.role != UserRole.ADMIN:
+        flash("Access denied.", "danger")
+        return redirect(url_for('auth.login'))
+    return "<h2>Coming soon: Contractor list</h2>"

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Admin Dashboard</h2>
+
+    <!-- User Management -->
+    <div class="mb-5">
+        <h4>User Management</h4>
+        <a href="{{ url_for('routes.view_all_users') }}" class="btn btn-outline-primary w-100 mb-2">👥 View All Users</a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-success w-100 mb-2">➕ Register New User</a>
+    </div>
+
+    <!-- Client Management -->
+    <div class="mb-5">
+        <h4>Client Management</h4>
+        <a href="{{ url_for('routes.view_all_clients') }}" class="btn btn-outline-primary w-100 mb-2">🏢 View All Clients</a>
+        <a href="{{ url_for('routes.register_client') }}" class="btn btn-outline-success w-100 mb-2">➕ Register New Client</a>
+    </div>
+
+    <!-- Contractor Management -->
+    <div class="mb-5">
+        <h4>Contractor Management</h4>
+        <a href="{{ url_for('routes.view_all_contractors') }}" class="btn btn-outline-primary w-100 mb-2">🔧 View All Contractors</a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-success w-100 mb-2">➕ Register New Contractor</a>
+    </div>
+
+    <!-- Work Orders -->
+    <div class="mb-5">
+        <h4>Work Orders</h4>
+        <a href="{{ url_for('routes.work_orders') }}" class="btn btn-outline-primary w-100 mb-2">📋 View All Work Orders</a>
+        <a href="{{ url_for('routes.create_work_order') }}" class="btn btn-outline-success w-100 mb-2">➕ Create New Work Order</a>
+    </div>
+</div>
+{% endblock %}

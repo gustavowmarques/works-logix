@@ -15,9 +15,25 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and check_password_hash(user.password_hash, password):
 
+            
+            print("DEBUG ROLE:", user.role)  # Add this line
             login_user(user)
             flash('Login successful.', 'success')
-            return redirect(url_for('routes.home'))
+
+            if user and check_password_hash(user.password_hash, password):
+
+
+                # Redirect user based on their role
+                if user.role == UserRole.CONTRACTOR:
+                    return redirect(url_for('routes.contractor_home'))
+                elif user.role == UserRole.MANAGER:
+                    return redirect(url_for('routes.home'))
+                elif user.role == UserRole.ADMIN:
+                    return redirect(url_for('routes.admin_dashboard'))
+                else:
+                    flash(f'Unknown user role: {user.role}', 'danger')
+                    return redirect(url_for('auth.login'))
+
         else:
             flash('Invalid email or password.', 'danger')
     return render_template('login.html')
