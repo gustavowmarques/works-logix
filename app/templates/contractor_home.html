@@ -1,51 +1,74 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>Contractor Dashboard</h2>
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Status</th>
-        <th>Client</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for order in orders %}
-      <tr>
-        <td>{{ order.title }}</td>
-        <td>{{ order.description }}</td>
-        <td>{{ order.status }}</td>
-        <td>{{ order.client.name if order.client else 'N/A' }}</td>
-        <td>
-          {% if order.status == 'Open' and not order.contractor_id %}
-            <form action="{{ url_for('routes.accept_work_order', order_id=order.id) }}" method="post" style="display:inline;">
-              <button type="submit" class="btn btn-success btn-sm">Accept</button>
-            </form>
-            <form action="{{ url_for('routes.reject_work_order', order_id=order.id) }}" method="post" style="display:inline;">
-              <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-            </form>
-          {% elif order.contractor_id == current_user.id and order.status == 'Accepted' %}
-            <form action="{{ url_for('routes.complete_work_order', order_id=order.id) }}" method="post" enctype="multipart/form-data">
-              <input type="file" name="completion_photo" required>
-              <button type="submit" class="btn btn-primary btn-sm">Mark as Completed</button>
-            </form>
-          {% elif order.status == 'Completed' %}
-            <span class="badge bg-success">Completed</span>
-            {% if order.completion_photo %}
-              <br>
-              <a href="{{ url_for('static', filename='uploads/' ~ order.completion_photo) }}" target="_blank">View Photo</a>
-            {% endif %}
-          {% else %}
-            <span class="badge bg-secondary">In Progress</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<div class="container mt-5">
+    <h2 class="mb-4">My Work Orders</h2>
+
+    {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Client</th>
+                        <th>Status</th>
+                        <th>Completion Photo</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>{{ order.title }}</td>
+                            <td>{{ order.description }}</td>
+                            <td>{{ order.client.name }}</td>
+                            <td>
+                                {% if order.status == 'Open' %}
+                                    <span class="badge bg-warning text-dark">Open</span>
+                                {% elif order.status == 'Accepted' %}
+                                    <span class="badge bg-primary">Accepted</span>
+                                {% elif order.status == 'Completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif order.status == 'Rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ order.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if order.completion_photo %}
+                                    <a href="{{ url_for('static', filename='uploads/' + order.completion_photo) }}" target="_blank">
+                                        <img src="{{ url_for('static', filename='uploads/' + order.completion_photo) }}" alt="Photo" width="50">
+                                    </a>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if order.status == 'Open' %}
+                                    <form action="{{ url_for('routes.accept_work_order', order_id=order.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-success">Accept</button>
+                                    </form>
+                                    <form action="{{ url_for('routes.reject_work_order', order_id=order.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                    </form>
+                                {% elif order.status == 'Accepted' %}
+                                    <form action="{{ url_for('routes.complete_work_order', order_id=order.id) }}" method="post" enctype="multipart/form-data" class="d-inline">
+                                        <input type="file" name="completion_photo" accept="image/*" required class="form-control form-control-sm mb-2">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Mark Completed</button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted">No actions available</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No work orders assigned to you yet.</p>
+    {% endif %}
 </div>
 {% endblock %}
