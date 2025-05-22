@@ -10,7 +10,7 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="{{ url_for('routes.home') }}">Works Logix</a>
+      <a class="navbar-brand" href="#">Works Logix</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -20,14 +20,12 @@
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           {% if current_user.is_authenticated %}
           {% if current_user.role.value == ROLE_ADMIN %}
-
-
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('routes.register_client') }}">Register Client</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('auth.register') }}">Register User</a>
-              </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('routes.admin_dashboard') }}">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('routes.home') }}">Work Orders</a>
+          </li>
             {% elif current_user.role.value == ROLE_MANAGER %}
               <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('routes.home') }}">Work Orders</a>
@@ -36,9 +34,8 @@
                 <a class="nav-link" href="{{ url_for('routes.create_work_order') }}">Create Work Order</a>
               </li>
               {% elif current_user.role.value == ROLE_CONTRACTOR %}
-
               <li class="nav-item">
-                <a class="nav-link" href="{{ url_for('routes.home') }}">View Work Orders</a>
+                <a class="nav-link" href="{{ url_for('routes.contractor_home') }}">My Work</a>
               </li>
             {% endif %}
           {% endif %}
