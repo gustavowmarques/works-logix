@@ -36,6 +36,25 @@
       </select>
     </div>
 
+    <!-- Select Business Type -->
+    <select name="business_type" required>
+      <option value="plumbing">Plumbing</option>
+      <option value="electrical">Electrical</option>
+      <option value="security">Security</option>
+      <option value="landscaping">Landscaping</option>
+      <option value="cleaning">Cleaning</option>
+      <option value="waste collection">Waste Collection</option>
+      <option value="pest control">Pest Control</option>
+    </select>
+
+    <!-- Preferred Contractor -->
+    <select name="preferred_contractor_id">
+      <option value="">-- Select Preferred Contractor (optional) --</option>
+      {% for contractor in filtered_contractors %}
+        <option value="{{ contractor.id }}">{{ contractor.username }} ({{ contractor.email }})</option>
+      {% endfor %}
+    </select>
+
     <div class="mb-3">
       <label for="occupant_apartment" class="form-label">Occupant's Apartment</label>
       <input type="text" class="form-control" name="occupant_apartment" id="occupant_apartment">

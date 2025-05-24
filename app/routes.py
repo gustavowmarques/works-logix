@@ -66,13 +66,18 @@ def create_work_order():
         contractor_id = request.form['contractor_id']
         occupant_apartment = request.form.get('occupant_apartment')
         occupant_contact = request.form.get('occupant_contact')
+        business_type = request.form['business_type']
+        preferred_contractor_id = request.form.get('preferred_contractor_id') or None
 
 
         new_order = WorkOrder(
             title=title,
             description=description,
-            created_by=created_by,
+            created_by=current_user.username,
+            status="Open",
             client_id=client_id,
+            business_type=business_type,
+            preferred_contractor_id=preferred_contractor_id,
             contractor_id=contractor_id,
             occupant_apartment=occupant_apartment,
             occupant_contact=occupant_contact
@@ -84,7 +89,7 @@ def create_work_order():
 
     # Handle GET – load dropdown options
     clients = Client.query.all()
-    contractors = Contractor.query.all()
+    contractors = User.query.filter_by(role=UserRole.CONTRACTOR).all()
     return render_template('partials/create_work_order.html', clients=clients, contractors=contractors)
 
 @routes_bp.route('/contractor/work-orders')
@@ -230,18 +235,34 @@ def contractor_detail(contractor_id):
 @routes_bp.route('/contractor/home')
 @login_required
 def contractor_home():
-    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
-        abort(403)
+    contractor = User.query.get(current_user.id)
 
+    # Orders already accepted by this contractor
+    assigned_orders = WorkOrder.query.filter_by(contractor_id=contractor.id).all()
 
-    from app.models import WorkOrder
+    # Orders only for this contractor as preferred and still Open
+    preferred_orders = WorkOrder.query.filter_by(
+        status='Open',
+        preferred_contractor_id=contractor.id,
+        contractor_id=None
+    ).all()
 
-    # Show orders that are either assigned to this contractor or unassigned
-    orders = WorkOrder.query.filter(
-        (WorkOrder.contractor_id == current_user.id) | (WorkOrder.contractor_id.is_(None))
-    ).order_by(WorkOrder.created_at.desc()).all()
+    # Fallback orders if preferred contractor has rejected and this contractor hasn't
+    eligible_orders = WorkOrder.query.filter(
+        WorkOrder.status == 'Open',
+        WorkOrder.contractor_id.is_(None),
+        WorkOrder.business_type == contractor.business_type,
+        WorkOrder.preferred_contractor_id.is_(None),
+        ~WorkOrder.rejected_by.contains(str(contractor.id))
+    ).all()
 
-    return render_template('contractor_home.html', orders=orders)
+    return render_template(
+        'contractor_home.html',
+        assigned_orders=assigned_orders,
+        preferred_orders=preferred_orders,
+        eligible_orders=eligible_orders
+    )
+
 
 @routes_bp.route('/admin/dashboard')
 @login_required
