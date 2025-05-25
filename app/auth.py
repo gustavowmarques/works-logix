@@ -56,24 +56,31 @@ def register():
         username = request.form['username']
         email = request.form['email']
         password = request.form['password']
-        role = request.form['role']
+        role_str = request.form.get('role')
 
-        # Optional: normalize role input
-        if role.upper() == "CONTRACTOR":
-            role = UserRole.CONTRACTOR
-        elif role.upper() == "MANAGER":
-            role = UserRole.MANAGER
-        else:
-            role = UserRole.ADMIN
+        # Convert form role string to Enum safely
+        try:
+            role_enum = UserRole(role_str)
+        except ValueError:
+            flash("Invalid role selected.", "danger")
+            return redirect(url_for('auth.register'))
 
-        hashed_password = generate_password_hash(password)
+        business_type = request.form.get('business_type') if role_enum == UserRole.CONTRACTOR else None
 
-        user = User(username=username, email=email, password_hash=hashed_password, role=role)
-        db.session.add(user)
+        new_user = User(
+            username=username,
+            email=email,
+            role=role_enum,
+            business_type=business_type,
+            password_hash=generate_password_hash(password)
+        )
+
+        db.session.add(new_user)
         db.session.commit()
 
         flash("User registered successfully.", "success")
         return redirect(url_for('routes.home'))
 
     return render_template('register.html')
+
 

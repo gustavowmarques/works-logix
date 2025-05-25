@@ -4,7 +4,7 @@
 <div class="container mt-5">
     <h2 class="mb-4">My Work Orders</h2>
 
-    {% if orders %}
+    {% if orders or preferred_orders or eligible_orders %}
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead class="table-dark">
@@ -64,22 +64,25 @@
                             </td>
                         </tr>
                     {% endfor %}
+                
                     {% for order in preferred_orders + eligible_orders %}
-                    <tr>
-                    <td>{{ order.title }}</td>
-                    <td>{{ order.description }}</td>
-                    <td>
-                        <form action="{{ url_for('routes.accept_order', order_id=order.id) }}" method="post">
-                        <button type="submit">Accept</button>
-                        </form>
-                        <form action="{{ url_for('routes.reject_order', order_id=order.id) }}" method="post">
-                        <button type="submit">Reject</button>
-                        </form>
-                    </td>
-                    </tr>
+                        <tr>
+                            <td>{{ order.title }}</td>
+                            <td>{{ order.description }}</td>
+                            <td>{{ order.client.name if order.client else 'N/A' }}</td>
+                            <td><span class="badge bg-warning text-dark">Available</span></td>
+                            <td>N/A</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('routes.accept_order', order_id=order.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">Accept</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('routes.reject_order', order_id=order.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
                     {% endfor %}
-
-                </tbody>
+                </tbody>                
             </table>
         </div>
     {% else %}

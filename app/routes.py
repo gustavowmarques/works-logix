@@ -58,33 +58,43 @@ def work_orders():
 @routes_bp.route('/work-orders/create', methods=['GET', 'POST'])
 @login_required
 def create_work_order():
+    if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
+        abort(403)
+
+    contractors = User.query.filter_by(role=UserRole.CONTRACTOR).all()
+
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
-        created_by = current_user.username  # Prefer using session info
+        created_by = current_user.username
         client_id = request.form['client_id']
         contractor_id = request.form['contractor_id']
         occupant_apartment = request.form.get('occupant_apartment')
         occupant_contact = request.form.get('occupant_contact')
-        business_type = request.form['business_type']
+        business_type = request.form.get('business_type')
         preferred_contractor_id = request.form.get('preferred_contractor_id') or None
 
+        if not business_type and request.form.get('preferred_contractor_id'):
+            preferred_contractor_id = int(request.form['preferred_contractor_id'])
+            contractor = User.query.get(preferred_contractor_id)
+            if contractor and contractor.business_type:
+                business_type = contractor.business_type
 
         new_order = WorkOrder(
             title=title,
             description=description,
-            created_by=current_user.username,
+            created_by=created_by,
             status="Open",
             client_id=client_id,
             business_type=business_type,
             preferred_contractor_id=preferred_contractor_id,
-            contractor_id=contractor_id,
             occupant_apartment=occupant_apartment,
-            occupant_contact=occupant_contact
+            occupant_contact=occupant_contact,
+            contractor_id=None
         )
         db.session.add(new_order)
         db.session.commit()
-        flash('Work order created successfully.')
+        flash('Work order created.', 'success')
         return redirect(url_for('routes.home'))
 
     # Handle GET – load dropdown options
@@ -114,47 +124,31 @@ def contractor_work_orders():
 
     return render_template('contractor_work_orders.html', orders=orders)
 
-@routes_bp.route('/contractor/work-orders/<int:order_id>/accept', methods=['POST'])
+@routes_bp.route('/work-orders/<int:order_id>/accept', methods=['POST'])
 @login_required
-def accept_work_order(order_id):
-    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
-        abort(403)
-
-    
+def accept_order(order_id):
     order = WorkOrder.query.get_or_404(order_id)
-    
-    if order.contractor_id:
-        flash("This work order has already been accepted.", "warning")
-    else:
+    if order.contractor_id is None:
         order.contractor_id = current_user.id
-        order.status = "Accepted"
-        order.rejected_by = None
         db.session.commit()
-        flash("You have accepted the work order.", "success")
+        flash("You have accepted this work order.", "success")
+    return redirect(url_for('routes.contractor_home'))
 
-    return redirect(url_for('routes.contractor_work_orders'))
-
-
-@routes_bp.route('/contractor/work-orders/<int:order_id>/reject', methods=['POST'])
+@routes_bp.route('/work-orders/<int:order_id>/reject', methods=['POST'])
 @login_required
-def reject_work_order(order_id):
-    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
-        abort(403)
-
-
+def reject_order(order_id):
     order = WorkOrder.query.get_or_404(order_id)
-    if order.contractor_id == current_user.id or order.contractor_id is None:
-        order.contractor_id = None
-        order.status = 'Open'
-        order.rejected_by = current_user.id
-        db.session.commit()
-        flash("Work order rejected.", "info")
+    if not order.rejected_by:
+        order.rejected_by = str(current_user.id)
     else:
-        flash("You can't reject this work order.", "warning")
+        ids = order.rejected_by.split(',')
+        if str(current_user.id) not in ids:
+            ids.append(str(current_user.id))
+        order.rejected_by = ','.join(ids)
+    db.session.commit()
+    flash("You have rejected this work order.", "info")
+    return redirect(url_for('routes.contractor_home'))
 
-    return redirect(url_for('routes.contractor_work_orders'))
-
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'app', 'static', 'uploads')
 
 @routes_bp.route('/contractor/work-orders/<int:order_id>/complete', methods=['POST'])
 @login_required
@@ -235,34 +229,39 @@ def contractor_detail(contractor_id):
 @routes_bp.route('/contractor/home')
 @login_required
 def contractor_home():
-    contractor = User.query.get(current_user.id)
+    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
+        abort(403)
 
-    # Orders already accepted by this contractor
+    contractor = current_user
+
+    if not contractor.business_type:
+        flash("Your profile is missing a business type. Contact admin.", "danger")
+        return redirect(url_for('auth.logout'))
+
+    # Orders assigned directly
     assigned_orders = WorkOrder.query.filter_by(contractor_id=contractor.id).all()
 
-    # Orders only for this contractor as preferred and still Open
-    preferred_orders = WorkOrder.query.filter_by(
-        status='Open',
-        preferred_contractor_id=contractor.id,
-        contractor_id=None
+    # Preferred contractor open orders
+    preferred_orders = WorkOrder.query.filter(
+        WorkOrder.status == 'Open',
+        WorkOrder.preferred_contractor_id == contractor.id,
+        WorkOrder.contractor_id == None
     ).all()
 
-    # Fallback orders if preferred contractor has rejected and this contractor hasn't
+    # Eligible (same business type, not yet rejected)
     eligible_orders = WorkOrder.query.filter(
         WorkOrder.status == 'Open',
-        WorkOrder.contractor_id.is_(None),
         WorkOrder.business_type == contractor.business_type,
-        WorkOrder.preferred_contractor_id.is_(None),
+        WorkOrder.contractor_id == None,
         ~WorkOrder.rejected_by.contains(str(contractor.id))
     ).all()
 
     return render_template(
         'contractor_home.html',
-        assigned_orders=assigned_orders,
+        orders=assigned_orders,
         preferred_orders=preferred_orders,
         eligible_orders=eligible_orders
     )
-
 
 @routes_bp.route('/admin/dashboard')
 @login_required

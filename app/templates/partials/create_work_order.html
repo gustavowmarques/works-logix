@@ -48,12 +48,15 @@
     </select>
 
     <!-- Preferred Contractor -->
-    <select name="preferred_contractor_id">
-      <option value="">-- Select Preferred Contractor (optional) --</option>
-      {% for contractor in filtered_contractors %}
-        <option value="{{ contractor.id }}">{{ contractor.username }} ({{ contractor.email }})</option>
-      {% endfor %}
-    </select>
+    <div class="form-group">
+      <label for="preferred_contractor_id">Preferred Contractor</label>
+      <select class="form-control" name="preferred_contractor_id" id="preferred_contractor_id">
+        <option value="">-- Select --</option>
+        {% for contractor in contractors %}
+          <option value="{{ contractor.id }}">{{ contractor.username }} - {{ contractor.business_type }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
     <div class="mb-3">
       <label for="occupant_apartment" class="form-label">Occupant's Apartment</label>
