@@ -37,15 +37,18 @@
     </div> -->
 
     <!-- Select Business Type -->
-    <select name="business_type" required>
-      <option value="plumbing">Plumbing</option>
-      <option value="electrical">Electrical</option>
-      <option value="security">Security</option>
-      <option value="landscaping">Landscaping</option>
-      <option value="cleaning">Cleaning</option>
-      <option value="waste collection">Waste Collection</option>
-      <option value="pest control">Pest Control</option>
-    </select>
+    <div class="form-group mb-3">
+      <label for="client_id">Business Type (Category)</label>
+        <select class="form-control" id="business_type" name="business_type" required>
+          <option value="plumbing">Plumbing</option>
+          <option value="electrical">Electrical</option>
+          <option value="security">Security</option>
+          <option value="landscaping">Landscaping</option>
+          <option value="cleaning">Cleaning</option>
+          <option value="waste collection">Waste Collection</option>
+          <option value="pest control">Pest Control</option>
+        </select>
+    </div>
 
     <!-- Preferred Contractor -->
     <div class="form-group">
