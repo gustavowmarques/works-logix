@@ -17,8 +17,16 @@ def root():
 @routes_bp.route('/home')
 @login_required
 def home():
-    orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
+    if current_user.role == UserRole.ADMIN:
+        orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
+    elif current_user.role == UserRole.MANAGER:
+        orders = WorkOrder.query.filter_by(created_by=current_user.username).order_by(WorkOrder.created_at.desc()).all()
+    else:
+        abort(403)
+
     return render_template('home.html', orders=orders)
+
+
 
 @routes_bp.route('/register-client', methods=['GET', 'POST'])
 @login_required
@@ -134,28 +142,41 @@ def contractor_work_orders():
 @routes_bp.route('/work-orders/<int:order_id>/accept', methods=['POST'])
 @login_required
 def accept_order(order_id):
+    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
+        abort(403)
+
     order = WorkOrder.query.get_or_404(order_id)
-    if order.contractor_id is None:
-        order.contractor_id = current_user.id
-        db.session.commit()
-        flash("You have accepted this work order.", "success")
+
+    if order.status != "Open":
+        flash("This order is no longer available.", "warning")
+        return redirect(url_for('routes.contractor_home'))
+
+    order.contractor_id = current_user.id
+    order.status = "Accepted"
+    order.rejected_by = None  # Reset in case it was re-offered
+    order.notes = request.form.get('notes')
+    db.session.commit()
+
+    flash("You have accepted this work order.", "success")
     return redirect(url_for('routes.contractor_home'))
 
 @routes_bp.route('/work-orders/<int:order_id>/reject', methods=['POST'])
 @login_required
 def reject_order(order_id):
+    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
+        abort(403)
+
     order = WorkOrder.query.get_or_404(order_id)
-    if not order.rejected_by:
-        order.rejected_by = str(current_user.id)
-    else:
-        ids = order.rejected_by.split(',')
-        if str(current_user.id) not in ids:
-            ids.append(str(current_user.id))
-        order.rejected_by = ','.join(ids)
+
+    if order.status != "Open":
+        flash("Only open orders can be rejected.", "warning")
+        return redirect(url_for('routes.contractor_home'))
+
+    # Mark as rejected by this contractor
+    order.rejected_by = current_user.id
     db.session.commit()
     flash("You have rejected this work order.", "info")
     return redirect(url_for('routes.contractor_home'))
-
 
 @routes_bp.route('/contractor/work-orders/<int:order_id>/complete', methods=['POST'])
 @login_required
@@ -239,36 +260,31 @@ def contractor_home():
     if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
         abort(403)
 
-    contractor = current_user
+    all_orders = WorkOrder.query.all()
+    my_orders = []
+    preferred_orders = []
+    eligible_orders = []
 
-    if not contractor.business_type:
-        flash("Your profile is missing a business type. Contact admin.", "danger")
-        return redirect(url_for('auth.logout'))
+    for order in all_orders:
+        # Skip if contractor previously rejected it
+        if order.rejected_by == current_user.id:
+            continue
 
-    # Orders assigned directly
-    assigned_orders = WorkOrder.query.filter_by(contractor_id=contractor.id).all()
+        # Show if contractor already accepted it
+        if order.contractor_id == current_user.id:
+            my_orders.append(order)
 
-    # Preferred contractor open orders
-    preferred_orders = WorkOrder.query.filter(
-        WorkOrder.status == 'Open',
-        WorkOrder.preferred_contractor_id == contractor.id,
-        WorkOrder.contractor_id == None
-    ).all()
+        # Available if not accepted yet and status is Open
+        elif order.status == "Open":
+            if order.preferred_contractor_id == current_user.id:
+                preferred_orders.append(order)
+            elif not order.preferred_contractor_id and order.business_type == current_user.business_type:
+                eligible_orders.append(order)
 
-    # Eligible (same business type, not yet rejected)
-    eligible_orders = WorkOrder.query.filter(
-        WorkOrder.status == 'Open',
-        WorkOrder.business_type == contractor.business_type,
-        WorkOrder.contractor_id == None,
-        ~WorkOrder.rejected_by.contains(str(contractor.id))
-    ).all()
-
-    return render_template(
-        'contractor_home.html',
-        orders=assigned_orders,
+    return render_template('contractor_home.html',
+        orders=my_orders,
         preferred_orders=preferred_orders,
-        eligible_orders=eligible_orders
-    )
+        eligible_orders=eligible_orders)
 
 @routes_bp.route('/admin/dashboard')
 @login_required
