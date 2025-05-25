@@ -6,7 +6,7 @@ function toggleContractorFields() {
   
     if (!roleSelect || !contractorFields) return;
   
-    if (roleSelect.value === "CONTRACTOR") {
+    if (roleSelect.value === "Contractor") {
       contractorFields.style.display = "block";
     } else {
       contractorFields.style.display = "none";
