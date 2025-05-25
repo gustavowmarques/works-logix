@@ -61,6 +61,9 @@ def create_work_order():
     if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
         abort(403)
 
+    contractors = User.query.filter_by(role=UserRole.CONTRACTOR).all()
+    contractor_categories = sorted(set(c.business_type for c in contractors if c.business_type))
+
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
@@ -68,9 +71,11 @@ def create_work_order():
         client_id = request.form['client_id']
         occupant_apartment = request.form.get('occupant_apartment')
         occupant_phone = request.form.get('occupant_phone')
-        occupant_name = request.form.get('occupant_name')  # New field
+        occupant_name = request.form.get('occupant_name') 
         business_type = request.form.get('business_type')
         preferred_contractor_id = request.form.get('preferred_contractor_id') or None
+        second_preferred_contractor_id = request.form.get('second_preferred_contractor_id') or None
+
 
         # If business_type wasn't selected directly, try to infer from selected contractor
         if not business_type and preferred_contractor_id:
@@ -86,9 +91,10 @@ def create_work_order():
             client_id=client_id,
             business_type=business_type,
             preferred_contractor_id=preferred_contractor_id,
+            second_preferred_contractor_id=second_preferred_contractor_id,
             occupant_apartment=occupant_apartment,
-            occupant_phone=occupant_phone,
-            occupant_name=occupant_name, 
+            occupant_phone=request.form.get('occupant_phone'),
+            occupant_name=request.form.get('occupant_name'), 
             contractor_id=None
         )
 
@@ -100,7 +106,7 @@ def create_work_order():
     # Handle GET – load dropdowns
     clients = Client.query.all()
     contractors = User.query.filter_by(role=UserRole.CONTRACTOR).all()
-    return render_template('partials/create_work_order.html', clients=clients, contractors=contractors)
+    return render_template('partials/create_work_order.html', clients=clients, contractors=contractors, contractor_categories=contractor_categories)
 
 
 @routes_bp.route('/contractor/work-orders')

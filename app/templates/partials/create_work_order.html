@@ -39,28 +39,40 @@
     <!-- Select Business Type -->
     <div class="form-group mb-3">
       <label for="client_id">Business Type (Category)</label>
-        <select class="form-control" id="business_type" name="business_type" required>
-          <option value="plumbing">Plumbing</option>
-          <option value="electrical">Electrical</option>
-          <option value="security">Security</option>
-          <option value="landscaping">Landscaping</option>
-          <option value="cleaning">Cleaning</option>
-          <option value="waste collection">Waste Collection</option>
-          <option value="pest control">Pest Control</option>
+        <select class="form-control" id="business_type" name="business_type" required onchange="filterContractorsByType()">
+          <option value="">-- Select Category --</option>
+          {% for category in contractor_categories %}
+            <option value="{{ category }}">{{ category }}</option>
+          {% endfor %}
         </select>
-    </div>
+      </div>
 
     <!-- Preferred Contractor -->
-    <div class="form-group">
+    <div class="form-group mb-3">
       <label for="preferred_contractor_id">Preferred Contractor</label>
       <select class="form-control" name="preferred_contractor_id" id="preferred_contractor_id">
         <option value="">-- Select --</option>
         {% for contractor in contractors %}
-          <option value="{{ contractor.id }}">{{ contractor.username }} - {{ contractor.business_type }}</option>
+          <option value="{{ contractor.id }}" data-type="{{ contractor.business_type }}">
+            {{ contractor.username }} - {{ contractor.business_type }}
+          </option>
         {% endfor %}
       </select>
     </div>
 
+    <!-- Second Preferred Contractor -->
+    <div class="form-group mb-3">
+      <label for="second_preferred_contractor_id">Second Preferred Contractor (optional)</label>
+      <select class="form-control" name="second_preferred_contractor_id" id="second_preferred_contractor_id">
+        <option value="">-- Select --</option>
+        {% for contractor in contractors %}
+          <option value="{{ contractor.id }}" data-type="{{ contractor.business_type }}">
+            {{ contractor.username }} - {{ contractor.business_type }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    
     <div class="mb-3">
       <label for="occupant_apartment" class="form-label">Occupant's Apartment</label>
       <input type="text" class="form-control" name="occupant_apartment" id="occupant_apartment">

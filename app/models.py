@@ -34,6 +34,7 @@ class WorkOrder(db.Model):
     # New preferred contractor logic
     business_type = db.Column(db.String(100))  # Type of contractor service required
     preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    second_preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     rejected_by = db.Column(db.String(500))  # Comma-separated contractor IDs who have rejected
  
     #backrefs for relationships
