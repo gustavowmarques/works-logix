@@ -219,7 +219,7 @@ def delete_work_order(order_id):
 @login_required
 def work_order_detail(order_id):
     order = WorkOrder.query.get_or_404(order_id)
-    return render_template('work_order_detail.html', order=order)
+    return render_template('work_order_detail.html', order=order, UserRole=UserRole)
 
 @routes_bp.route('/clients/<int:client_id>')
 @login_required
