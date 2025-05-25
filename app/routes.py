@@ -61,22 +61,20 @@ def create_work_order():
     if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
         abort(403)
 
-    contractors = User.query.filter_by(role=UserRole.CONTRACTOR).all()
-
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
         created_by = current_user.username
         client_id = request.form['client_id']
-        contractor_id = request.form['contractor_id']
         occupant_apartment = request.form.get('occupant_apartment')
-        occupant_contact = request.form.get('occupant_contact')
+        occupant_phone = request.form.get('occupant_phone')
+        occupant_name = request.form.get('occupant_name')  # New field
         business_type = request.form.get('business_type')
         preferred_contractor_id = request.form.get('preferred_contractor_id') or None
 
-        if not business_type and request.form.get('preferred_contractor_id'):
-            preferred_contractor_id = int(request.form['preferred_contractor_id'])
-            contractor = User.query.get(preferred_contractor_id)
+        # If business_type wasn't selected directly, try to infer from selected contractor
+        if not business_type and preferred_contractor_id:
+            contractor = User.query.get(int(preferred_contractor_id))
             if contractor and contractor.business_type:
                 business_type = contractor.business_type
 
@@ -89,18 +87,21 @@ def create_work_order():
             business_type=business_type,
             preferred_contractor_id=preferred_contractor_id,
             occupant_apartment=occupant_apartment,
-            occupant_contact=occupant_contact,
+            occupant_phone=occupant_phone,
+            occupant_name=occupant_name, 
             contractor_id=None
         )
+
         db.session.add(new_order)
         db.session.commit()
         flash('Work order created.', 'success')
         return redirect(url_for('routes.home'))
 
-    # Handle GET – load dropdown options
+    # Handle GET – load dropdowns
     clients = Client.query.all()
     contractors = User.query.filter_by(role=UserRole.CONTRACTOR).all()
     return render_template('partials/create_work_order.html', clients=clients, contractors=contractors)
+
 
 @routes_bp.route('/contractor/work-orders')
 @login_required

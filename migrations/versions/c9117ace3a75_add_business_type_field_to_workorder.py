@@ -30,7 +30,7 @@ def upgrade():
                existing_type=sa.TEXT(),
                type_=sa.String(length=120),
                existing_nullable=True)
-        batch_op.alter_column('occupant_contact',
+        batch_op.alter_column('occupant_phone',
                existing_type=sa.TEXT(),
                type_=sa.String(length=120),
                existing_nullable=True)
@@ -54,7 +54,7 @@ def downgrade():
                existing_type=sa.String(length=500),
                type_=sa.INTEGER(),
                existing_nullable=True)
-        batch_op.alter_column('occupant_contact',
+        batch_op.alter_column('occupant_phone',
                existing_type=sa.String(length=120),
                type_=sa.TEXT(),
                existing_nullable=True)

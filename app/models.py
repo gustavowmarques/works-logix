@@ -27,7 +27,9 @@ class WorkOrder(db.Model):
 
     completion_photo = db.Column(db.String(200), nullable=True)
     occupant_apartment = db.Column(db.String(120))
-    occupant_contact = db.Column(db.String(120))
+    occupant_phone = db.Column(db.String(120))
+    occupant_name = db.Column(db.String(120))
+
 
     # New preferred contractor logic
     business_type = db.Column(db.String(100))  # Type of contractor service required

@@ -22,14 +22,14 @@
     {% endif %}
   </li>
   <li><strong>Occupant Apartment:</strong> {{ order.occupant_apartment or 'Not Provided' }}</li>
-  <li><strong>Occupant Contact:</strong> {{ order.occupant_contact or 'Not Provided' }}</li>
+  <li><strong>Occupant Contact:</strong> {{ order.occupant_phone or 'Not Provided' }}</li>
 
   {% if order.completion_photo %}
     <li><strong>Completion Photo:</strong><br><img src="{{ url_for('static', filename='uploads/' ~ order.completion_photo) }}" width="200"></li>
   {% endif %}
 </ul>
 
-{% if current_user.role == 'Property Manager' and order.status == 'Completed' %}
+{% if current_user.role == UserRole.MANAGER and order.status == 'Completed' %}
     <form method="POST" action="{{ url_for('routes.reopen_work_order', order_id=order.id) }}">
         <button type="submit" class="btn btn-warning">Reopen Work Order</button>
     </form>

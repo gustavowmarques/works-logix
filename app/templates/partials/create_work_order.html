@@ -25,7 +25,7 @@
       </select>
     </div>
 
-    <!-- Contractor Dropdown -->
+    <!-- Contractor Dropdown
     <div class="form-group mb-3">
       <label for="contractor_id">Select Contractor</label>
       <select class="form-control" id="contractor_id" name="contractor_id" required>
@@ -34,7 +34,7 @@
           <option value="{{ contractor.id }}">{{ contractor.company_name }}</option>
         {% endfor %}
       </select>
-    </div>
+    </div> -->
 
     <!-- Select Business Type -->
     <select name="business_type" required>
@@ -62,12 +62,14 @@
       <label for="occupant_apartment" class="form-label">Occupant's Apartment</label>
       <input type="text" class="form-control" name="occupant_apartment" id="occupant_apartment">
     </div>
-    <div class="mb-3">
-      <label for="occupant_contact" class="form-label">Occupant's Contact Number</label>
-      <input type="text" class="form-control" name="occupant_contact" id="occupant_contact">
+    <div class="form-group mb-3">
+      <label for="occupant_name">Occupant's Name</label>
+      <input type="text" class="form-control" name="occupant_name" id="occupant_name">
     </div>
-    
-
+    <div class="mb-3">
+      <label for="occupant_phone" class="form-label">Occupant's Contact Number</label>
+      <input type="text" class="form-control" name="occupant_phone" id="occupant_phone">
+    </div>
     <button type="submit" class="btn btn-primary">Create Work Order</button>
   </form>
 </div>
