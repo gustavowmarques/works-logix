@@ -1,17 +1,16 @@
 console.log("script.js loaded");
 
 function toggleContractorFields() {
-    const roleSelect = document.getElementById("roleSelect");
-    const contractorFields = document.getElementById("contractorFields");
-  
-    if (!roleSelect || !contractorFields) return;
-  
-    if (roleSelect.value === "Contractor") {
-      contractorFields.style.display = "block";
-    } else {
-      contractorFields.style.display = "none";
-    }
+  const role = document.getElementById('roleSelect').value;
+  const contractorFields = document.getElementById('contractorFields');
+
+  if (role === 'Contractor') {
+    contractorFields.style.display = 'block';
+  } else {
+    contractorFields.style.display = 'none';
   }
+}
+
 
   function filterContractorsByType() {
     const selectedType = document.getElementById('business_type').value;

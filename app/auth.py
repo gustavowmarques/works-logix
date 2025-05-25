@@ -54,7 +54,7 @@ def register():
 
     if request.method == 'POST':
         username = request.form['username']
-        email = request.form['email']
+        email = request.form['email'].strip().lower()
         password = request.form['password']
         role_str = request.form.get('role')
 
@@ -74,6 +74,11 @@ def register():
             business_type=business_type,
             password_hash=generate_password_hash(password)
         )
+
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash('Email already registered. Please use a different email.', 'danger')
+            return redirect(url_for('routes.register'))
 
         db.session.add(new_user)
         db.session.commit()
