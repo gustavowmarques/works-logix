@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import Flask
 from app.extensions import db, login_manager, migrate
 from config import Config
@@ -8,6 +11,7 @@ from . import auth
 from app.routes import routes_bp
 from app.auth import auth_bp
 from app.models import User
+
 
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
