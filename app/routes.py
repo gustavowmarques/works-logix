@@ -8,6 +8,8 @@ from sqlalchemy import or_, and_
 import os
 from werkzeug.utils import secure_filename
 
+UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+
 routes_bp = Blueprint('routes', __name__)
 
 @routes_bp.route('/')
@@ -155,21 +157,21 @@ def contractor_work_orders():
     if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
         abort(403)
 
+    contractor_id_str = str(current_user.id)
 
     orders = WorkOrder.query.filter(
-        and_(
-            or_(
-                WorkOrder.contractor_id == None,
-                WorkOrder.contractor_id == current_user.id
-            ),
-            or_(
-                WorkOrder.rejected_by == None,
-                WorkOrder.rejected_by != current_user.id
-            )
+        or_(
+            WorkOrder.contractor_id == None,
+            WorkOrder.contractor_id == current_user.id
+        ),
+        or_(
+            WorkOrder.rejected_by == None,
+            ~WorkOrder.rejected_by.contains(contractor_id_str)
         )
     ).order_by(WorkOrder.created_at.desc()).all()
 
     return render_template('contractor_work_orders.html', orders=orders)
+
 
 @routes_bp.route('/work-orders/<int:order_id>/accept', methods=['POST'])
 @login_required
