@@ -55,4 +55,36 @@
         </tbody>
     </table>
     {% endif %}
+    <h4>Returned Work Orders</h4>
+    {% if returned_orders %}
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for order in returned_orders %}
+        <tr>
+            <td>{{ order.title }}</td>
+            <td>{{ order.status }}</td>
+            <td>
+                <a href="{{ url_for('routes.resubmit_work_order', order_id=order.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            <form method="post" action="{{ url_for('routes.delete_work_order', order_id=order.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this order?');">Delete</button>
+            </form>
+            <form method="post" action="{{ url_for('routes.resubmit_work_order', order_id=order.id) }}" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-success">Resubmit</button>
+            </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No returned work orders.</p>
+    {% endif %}
+
 {% endblock %}

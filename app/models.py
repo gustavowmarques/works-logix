@@ -11,7 +11,8 @@ class WorkOrderStatus(Enum):
     OPEN = "Open"
     ACCEPTED = "Accepted"
     COMPLETED = "Completed"
-    
+    RETURNED = "Returned"
+
 class WorkOrder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -22,24 +23,21 @@ class WorkOrder(db.Model):
 
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    contractor = db.relationship("User", backref="accepted_work_orders")
-    business_type = db.Column(db.String(100))  # Type of contractor service required
-
+    contractor = db.relationship('User', foreign_keys=[contractor_id], backref="accepted_work_orders")
+    
+    business_type = db.Column(db.String(100))  # Only once
+    
     completion_photo = db.Column(db.String(200), nullable=True)
     occupant_apartment = db.Column(db.String(120))
     occupant_phone = db.Column(db.String(120))
     occupant_name = db.Column(db.String(120))
 
-
-    # New preferred contractor logic
-    business_type = db.Column(db.String(100))  # Type of contractor service required
     preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     second_preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     rejected_by = db.Column(db.String(500))  # Comma-separated contractor IDs who have rejected
- 
-    #backrefs for relationships
+
     client = db.relationship('Client', backref='work_orders')
-    contractor = db.relationship('User', foreign_keys=[contractor_id])
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)

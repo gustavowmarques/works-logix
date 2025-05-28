@@ -17,14 +17,23 @@ def root():
 @routes_bp.route('/home')
 @login_required
 def home():
-    if current_user.role == UserRole.ADMIN:
-        orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
-    elif current_user.role == UserRole.MANAGER:
-        orders = WorkOrder.query.filter_by(created_by=current_user.username).order_by(WorkOrder.created_at.desc()).all()
-    else:
+    if current_user.role not in [UserRole.MANAGER, UserRole.ADMIN]:
         abort(403)
 
-    return render_template('home.html', orders=orders)
+    from app.models import WorkOrderStatus
+
+    if current_user.role == UserRole.ADMIN:
+        orders = WorkOrder.query.order_by(WorkOrder.created_at.desc()).all()
+    else:
+        orders = WorkOrder.query.filter_by(created_by=current_user.username).order_by(WorkOrder.created_at.desc()).all()
+
+    returned_orders = [o for o in orders if o.status == WorkOrderStatus.RETURNED.value]
+
+    return render_template(
+        'home.html',
+        orders=orders,
+        returned_orders=returned_orders
+    )
 
 
 
@@ -167,7 +176,7 @@ def reject_order(order_id):
         abort(403)
 
     order = WorkOrder.query.get_or_404(order_id)
-    
+
     # Skip if already rejected
     if order.rejected_by and str(current_user.id) in order.rejected_by.split(","):
         flash("You have already rejected this work order.", "info")
@@ -260,17 +269,29 @@ def reopen_work_order(order_id):
     flash("Work order has been reopened.", "success")
     return redirect(url_for('routes.work_order_detail', order_id=order.id))
 
+@routes_bp.route('/work-orders/<int:order_id>/resubmit', methods=['POST'])
+@login_required
+def resubmit_work_order(order_id):
+    order = WorkOrder.query.get_or_404(order_id)
+    if current_user.username != order.created_by and current_user.role != UserRole.ADMIN:
+        abort(403)
+    order.status = "Open"
+    order.rejected_by = ""
+    db.session.commit()
+    flash("Work order resubmitted.", "success")
+    return redirect(url_for('routes.home'))
+
 @routes_bp.route('/work-orders/<int:order_id>/delete', methods=['POST'])
 @login_required
 def delete_work_order(order_id):
-    if current_user.role not in [UserRole.MANAGER, UserRole.ADMIN]:
+    order = WorkOrder.query.get_or_404(order_id)
+    if current_user.username != order.created_by and current_user.role != UserRole.ADMIN:
         abort(403)
 
-    order = WorkOrder.query.get_or_404(order_id)
     db.session.delete(order)
     db.session.commit()
-    flash("Work order deleted successfully.", "success")
-    return redirect(url_for('routes.work_orders'))
+    flash("Work order deleted.", "success")
+    return redirect(url_for('routes.home'))
 
 
 @routes_bp.route('/work-orders/<int:order_id>')
