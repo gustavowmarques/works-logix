@@ -167,32 +167,51 @@ def reject_order(order_id):
         abort(403)
 
     order = WorkOrder.query.get_or_404(order_id)
-    rejected_list = order.rejected_by.split(",") if order.rejected_by else []
-
-    if str(current_user.id) in rejected_list:
-        flash("You have already rejected this order.", "info")
+    
+    # Skip if already rejected
+    if order.rejected_by and str(current_user.id) in order.rejected_by.split(","):
+        flash("You have already rejected this work order.", "info")
         return redirect(url_for('routes.contractor_home'))
 
-    # Append this contractor to rejected list
-    rejected_list.append(str(current_user.id))
-    order.rejected_by = ",".join(rejected_list)
+    # Append contractor ID to rejected list
+    if order.rejected_by:
+        order.rejected_by += f",{current_user.id}"
+    else:
+        order.rejected_by = str(current_user.id)
 
-    # If current contractor is assigned, unassign them
+    # If contractor was assigned, unassign
     if order.contractor_id == current_user.id:
         order.contractor_id = None
-        order.status = "Available"
 
-    # Try assigning second preferred contractor
-    second_pref = order.second_preferred_contractor_id
-    if second_pref and str(second_pref) not in rejected_list:
-        order.contractor_id = second_pref
-        order.status = "Available"
+    # Now: REASSIGN if possible
+    if order.second_preferred_contractor_id and \
+       str(order.second_preferred_contractor_id) not in order.rejected_by.split(","):
+        order.contractor_id = order.second_preferred_contractor_id
+        order.status = "Open"
+
     else:
-        order.contractor_id = None
-        order.status = "Available"
+        # Try reassigning to any other matching contractor
+        from app.models import User
+        other_contractors = User.query.filter(
+            User.role == UserRole.CONTRACTOR,
+            User.business_type == order.business_type,
+            User.id != current_user.id
+        ).all()
+
+        reassigned = False
+        for contractor in other_contractors:
+            if str(contractor.id) not in (order.rejected_by or "").split(","):
+                order.contractor_id = contractor.id
+                order.status = "Open"
+                reassigned = True
+                break
+
+        if not reassigned:
+            order.status = "Returned"
+            order.contractor_id = None  # Goes back to creator for resubmission
 
     db.session.commit()
-    flash("You have rejected this work order.", "info")
+    flash("You have rejected the work order.", "info")
     return redirect(url_for('routes.contractor_home'))
 
 
@@ -275,42 +294,58 @@ def contractor_detail(contractor_id):
 @routes_bp.route('/contractor/home')
 @login_required
 def contractor_home():
-    if current_user.role not in [UserRole.CONTRACTOR, UserRole.ADMIN]:
+    if current_user.role != UserRole.CONTRACTOR:
         abort(403)
 
-    all_orders = WorkOrder.query.all()
     my_orders = []
     preferred_orders = []
     eligible_orders = []
 
+    all_orders = WorkOrder.query.filter(WorkOrder.status.in_(["Open", "Accepted"])).all()
+
     for order in all_orders:
-        # Skip if contractor previously rejected it
-        if order.rejected_by and str(current_user.id) in order.rejected_by.split(","):
+        rejected_by_list = (order.rejected_by or "").split(",")
+
+        # Skip if current contractor has rejected this order
+        if str(current_user.id) in rejected_by_list:
             continue
 
-        # Show if contractor already accepted it
+        # Already accepted by this contractor
         if order.contractor_id == current_user.id:
             my_orders.append(order)
+            continue
 
-        # Available work orders not yet assigned
-        elif order.status == "Open":
+        # 1. Preferred contractor logic
+        if order.preferred_contractor_id:
             if order.preferred_contractor_id == current_user.id:
                 preferred_orders.append(order)
-            elif order.status == "Open" and order.business_type == current_user.business_type:
-                # Show if no preferred contractor or the preferred has rejected it
-                preferred_rejected = (
-                    order.preferred_contractor_id and 
-                    str(order.preferred_contractor_id) in (order.rejected_by or "").split(",")
-                )
+                continue
 
-                if not order.preferred_contractor_id or preferred_rejected:
-                    eligible_orders.append(order)
+            if str(order.preferred_contractor_id) in rejected_by_list:
+                # 2. Second preferred logic
+                if order.second_preferred_contractor_id:
+                    if order.second_preferred_contractor_id == current_user.id:
+                        preferred_orders.append(order)
+                        continue
 
+                    if str(order.second_preferred_contractor_id) not in rejected_by_list:
+                        continue  # Second preferred hasn't rejected yet
 
-    return render_template('contractor_home.html',
+        # 3. No preferred or both have rejected
+        if (not order.preferred_contractor_id or str(order.preferred_contractor_id) in rejected_by_list) and \
+           (not order.second_preferred_contractor_id or str(order.second_preferred_contractor_id) in rejected_by_list):
+
+            if order.business_type == current_user.business_type:
+                eligible_orders.append(order)
+
+    return render_template(
+        'contractor_home.html',
         orders=my_orders,
         preferred_orders=preferred_orders,
-        eligible_orders=eligible_orders)
+        eligible_orders=eligible_orders
+    )
+
+
 
 @routes_bp.route('/admin/dashboard')
 @login_required

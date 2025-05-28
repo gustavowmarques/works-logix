@@ -67,52 +67,25 @@
                     {% endfor %}
 
                     {% for order in preferred_orders + eligible_orders %}
-                        <tr>
-                            <td>{{ order.title }}</td>
-                            <td>{{ order.description }}</td>
-                            <td>{{ order.client.name if order.client else 'N/A' }}</td>
-                            <td><span class="badge bg-warning text-dark">Available</span></td>
-                            <td>N/A</td>
-                            <td>
-                                <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#acceptModal{{ order.id }}">
-                                    Accept
-                                </button>
-                                <form method="POST" action="{{ url_for('routes.reject_order', order_id=order.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
-                                </form>
-                            </td>
-                        </tr>
-
-                        <!-- Modal -->
-                        <div class="modal fade" id="acceptModal{{ order.id }}" tabindex="-1" aria-labelledby="acceptModalLabel{{ order.id }}" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form action="{{ url_for('routes.accept_order', order_id=order.id) }}" method="post" enctype="multipart/form-data">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="acceptModalLabel{{ order.id }}">Accept Work Order #{{ order.id }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-
-                                        <div class="modal-body">
-                                            <div class="mb-3">
-                                                <label for="notes{{ order.id }}" class="form-label">Initial Notes <span class="text-danger">*</span></label>
-                                                <textarea class="form-control" name="notes" id="notes{{ order.id }}" rows="3" required></textarea>
-                                            </div>
-                                            <div class="mb-3">
-                                                <label for="file{{ order.id }}" class="form-label">Upload Photo/Video</label>
-                                                <input class="form-control" type="file" name="media" id="file{{ order.id }}">
-                                            </div>
-                                        </div>
-
-                                        <div class="modal-footer">
-                                            <button type="submit" class="btn btn-primary">Accept</button>
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                        </div>
+                    {% if order.status == 'Open' %}
+                            <tr>
+                                <td>{{ order.title }}</td>
+                                <td>{{ order.description }}</td>
+                                <td>{{ order.client.name if order.client else 'N/A' }}</td>
+                                <td><span class="badge bg-warning text-dark">Available</span></td>
+                                <td>N/A</td>
+                                <td>
+                                    <form action="{{ url_for('routes.accept_order', order_id=order.id) }}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
                                     </form>
-                                </div>
-                            </div>
-                        </div>
+                                    <form method="POST" action="{{ url_for('routes.reject_order', order_id=order.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endif %}
                     {% endfor %}
+
                 </tbody>
             </table>
         </div>
