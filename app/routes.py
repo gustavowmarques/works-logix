@@ -126,6 +126,29 @@ def create_work_order():
     return render_template('partials/create_work_order.html', clients=clients, contractors=contractors, contractor_categories=contractor_categories)
 
 
+@routes_bp.route('/work-orders/<int:order_id>/edit', methods=['GET'])
+@login_required
+def edit_work_order(order_id):
+    order = WorkOrder.query.get_or_404(order_id)
+
+    # Only the creator or admin can edit
+    if current_user.username != order.created_by and current_user.role != UserRole.ADMIN:
+        abort(403)
+
+    from app.models import Client, User
+    clients = Client.query.all()
+    contractors = User.query.filter_by(role=UserRole.CONTRACTOR).all()
+    contractor_categories = sorted(set(c.business_type for c in contractors if c.business_type))
+
+    return render_template(
+        'partials/create_work_order.html',
+        order=order,
+        clients=clients,
+        contractors=contractors,
+        contractor_categories=contractor_categories
+    )
+
+
 @routes_bp.route('/contractor/work-orders')
 @login_required
 def contractor_work_orders():
@@ -222,6 +245,29 @@ def reject_order(order_id):
     db.session.commit()
     flash("You have rejected the work order.", "info")
     return redirect(url_for('routes.contractor_home'))
+
+
+@routes_bp.route('/work-orders/<int:order_id>/update', methods=['POST'])
+@login_required
+def update_work_order(order_id):
+    order = WorkOrder.query.get_or_404(order_id)
+    if current_user.role != UserRole.ADMIN and order.created_by != current_user.username:
+        abort(403)
+
+    order.title = request.form['title']
+    order.description = request.form['description']
+    order.client_id = request.form['client_id']
+    order.business_type = request.form['business_type']
+    order.occupant_apartment = request.form['occupant_apartment']
+    order.occupant_phone = request.form['occupant_phone']
+    order.occupant_name = request.form['occupant_name']
+    order.preferred_contractor_id = request.form.get('preferred_contractor_id') or None
+    order.second_preferred_contractor_id = request.form.get('second_preferred_contractor_id') or None
+
+    db.session.commit()
+    flash("Work order updated. You can now resubmit it.", "success")
+    return redirect(url_for('routes.home'))
+
 
 
 @routes_bp.route('/contractor/work-orders/<int:order_id>/complete', methods=['POST'])
