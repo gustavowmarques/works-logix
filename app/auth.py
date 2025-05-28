@@ -16,7 +16,7 @@ def login():
         if user and check_password_hash(user.password_hash, password):
 
             
-            print("DEBUG ROLE:", user.role)  # Add this line
+            print("DEBUG ROLE:", user.role)
             login_user(user)
             flash('Login successful.', 'success')
 

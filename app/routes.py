@@ -360,7 +360,7 @@ def contractor_detail(contractor_id):
     contractor = User.query.get_or_404(contractor_id)
     return render_template('contractor_detail.html', contractor=contractor)
 
-@routes_bp.route('/contractor/home')
+@routes_bp.route('/contractor/home', endpoint='contractor_home')
 @login_required
 def contractor_home():
     if current_user.role != UserRole.CONTRACTOR:
