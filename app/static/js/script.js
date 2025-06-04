@@ -56,6 +56,10 @@ async function fetchAddressFromEircode(eircode) {
       document.getElementById("street").value = result.street || '';
       document.getElementById("city").value = result.city || '';
       document.getElementById("county").value = result.county || '';
+
+      if (document.getElementById("country") && !document.getElementById("country").value) {
+        document.getElementById("country").value = result.countryName || '';
+      }
     } else {
       alert("Address not found for this Eircode.");
     }
