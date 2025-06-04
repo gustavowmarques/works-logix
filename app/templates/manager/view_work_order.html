@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>View Work Order</h2>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">{{ work_order.title }}</h5>
+            <p class="card-text"><strong>Description:</strong> {{ work_order.description }}</p>
+            <p class="card-text"><strong>Status:</strong> {{ work_order.status }}</p>
+            <p class="card-text"><strong>Client:</strong> {{ work_order.client.name }}</p>
+            <p class="card-text"><strong>Created By:</strong> {{ work_order.created_by }}</p>
+            <p class="card-text"><strong>Created At:</strong> {{ work_order.created_at }}</p>
+            <a href="{{ url_for('manager_routes.edit_work_order', order_id=work_order.id) }}" class="btn btn-primary">Edit</a>
+            <a href="{{ url_for('manager_routes.manager_home') }}" class="btn btn-secondary">Back</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

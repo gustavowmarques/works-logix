@@ -1,43 +1,65 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, session
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.extensions import db, login_manager
 from app.models import User
 from app.roles import UserRole
+from app.decorators import permission_required
+
 
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, password):
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
 
-            
-            print("DEBUG ROLE:", user.role)
+        print("Login attempt:", repr(email), repr(password))
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            print("No user found for:", email)
+            flash('Invalid email or password.', 'danger')
+            return redirect(url_for('auth.login'))
+
+        print("Found user:", user.email)
+        print("Hash in DB:", user.password_hash)
+        print("Password check result:", check_password_hash(user.password_hash, password))
+
+        if check_password_hash(user.password_hash, password):
+            if user.role is None:
+                flash('Your account has no role assigned. Please contact admin.', 'danger')
+                return redirect(url_for('auth.login'))
+
             login_user(user)
+            session['role'] = user.role.name
+
             flash('Login successful.', 'success')
 
-            if user and check_password_hash(user.password_hash, password):
+            role_name = user.role.name.lower()
 
+            if role_name == 'admin':
+                return redirect(url_for('admin_routes.admin_dashboard'))
+            elif role_name == 'property manager':
+                return redirect(url_for('manager_routes.manager_home'))
+            elif role_name == 'contractor':
+                return redirect(url_for('contractor_routes.contractor_home'))
+            else:
+                flash('Unknown role. Please contact support.', 'danger')
+                return redirect(url_for('auth.login'))
 
-                # Redirect user based on their role
-                if user.role == UserRole.CONTRACTOR:
-                    return redirect(url_for('routes.contractor_home'))
-                elif user.role == UserRole.MANAGER:
-                    return redirect(url_for('routes.home'))
-                elif user.role == UserRole.ADMIN:
-                    return redirect(url_for('routes.admin_dashboard'))
-                else:
-                    flash(f'Unknown user role: {user.role}', 'danger')
-                    return redirect(url_for('auth.login'))
 
         else:
             flash('Invalid email or password.', 'danger')
-    return render_template('login.html')
+            return redirect(url_for('auth.login'))
 
+    return render_template('auth/login.html')
+
+@auth_bp.route('/unauthorized')
+def unauthorized():
+    return render_template('auth/unauthorized.html'), 403
 
 @auth_bp.route('/logout')
 @login_required
@@ -48,6 +70,7 @@ def logout():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 @login_required
+@permission_required("create_user") 
 def register():
     if current_user.role != UserRole.ADMIN:
         abort(403)

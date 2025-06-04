@@ -1,0 +1,27 @@
+{% if returned_orders %}
+<h4>Returned Work Orders</h4>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Reason</th>
+      <th>Date</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for order in returned_orders %}
+    <tr>
+      <td>{{ order.title }}</td>
+      <td>{{ order.rejection_reason or 'Not provided' }}</td>
+      <td>{{ order.created_at.strftime('%Y-%m-%d') }}</td>
+      <td>
+        <a href="{{ url_for('manager_routes.edit_work_order', order_id=order.id) }}" class="btn btn-sm btn-warning">Edit & Resubmit</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>No returned work orders.</p>
+{% endif %}

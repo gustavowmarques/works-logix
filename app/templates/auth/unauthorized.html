@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="alert alert-warning mt-4">
+    <h4>Access Denied</h4>
+    <p>You do not have permission to view this page.</p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary mt-3">Go back to Login</a>
+  </div>
+{% endblock %}
+

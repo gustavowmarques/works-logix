@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>My Assigned Work Orders</h2>
+
+    {% if orders %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Client</th>
+                <th>Due</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.title }}</td>
+                <td>{{ order.status }}</td>
+                <td>{{ order.client.name }}</td>
+                <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '—' }}</td>
+                <td>
+                    <a href="{{ url_for('contractor_routes.view_work_order', order_id=order.id) }}" class="btn btn-primary btn-sm">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No assigned work orders.</p>
+    {% endif %}
+</div>
+{% endblock %}

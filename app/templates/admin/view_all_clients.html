@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>All Clients</h2>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Client Name</th>
+                <th>Address</th>
+                <th>Country</th>
+                <th>Assigned Property Manager</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients %}
+            <tr>
+                <td>{{ client.name }}</td>
+                <td>
+                    {{ client.street or '' }},
+                    {{ client.city or '' }},
+                    {{ client.county or '' }},
+                    {{ client.eircode or '' }}
+                </td>
+                <td>{{ client.country or 'N/A' }}</td>
+                <td>{{ client.assigned_pm.full_name if client.assigned_pm else 'Unassigned' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

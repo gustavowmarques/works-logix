@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app import create_app, db
-from app.models import Client
+from app.models import ClientCompany
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker
 

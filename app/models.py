@@ -1,80 +1,154 @@
-from .roles import UserRole
+from app.extensions import db
 from datetime import datetime
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-from enum import Enum
-from sqlalchemy import Enum as SQLAlchemyEnum
-from app.extensions import db
+from sqlalchemy.orm import relationship
+from sqlalchemy import ForeignKey
 
-
-class WorkOrderStatus(Enum):
-    OPEN = "Open"
-    ACCEPTED = "Accepted"
-    COMPLETED = "Completed"
-    RETURNED = "Returned"
-
-class WorkOrder(db.Model):
+# ----------------------------
+# BUSINESS TYPES
+# ----------------------------
+class BusinessType(db.Model):
+    __tablename__ = 'business_types'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(20), default='Open')  
-    created_by = db.Column(db.String(100), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    name = db.Column(db.String(100), unique=True, nullable=False)
 
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-    contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    contractor = db.relationship('User', foreign_keys=[contractor_id], backref="accepted_work_orders")
-    
-    business_type = db.Column(db.String(100))  # Only once
-    
-    completion_photo = db.Column(db.String(200), nullable=True)
-    occupant_apartment = db.Column(db.String(120))
-    occupant_phone = db.Column(db.String(120))
-    occupant_name = db.Column(db.String(120))
-
-    preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    second_preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
-    rejected_by = db.Column(db.String(500))  # Comma-separated contractor IDs who have rejected
-
-    client = db.relationship('Client', backref='work_orders')
-
-
-class User(UserMixin, db.Model):
+# ----------------------------
+# ROLES
+# ----------------------------
+class Role(db.Model):
+    __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), nullable=False)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.String(255))
+
+class RolePermission(db.Model):
+    __tablename__ = 'role_permissions'
+    id = db.Column(db.Integer, primary_key=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
+    permission = db.Column(db.String(100), nullable=False)
+
+# ----------------------------
+# USERS
+# ----------------------------
+class User(db.Model, UserMixin):
+    __tablename__ = 'user'
+
+    id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(300), nullable=False)    
-    role = db.Column(SQLAlchemyEnum(UserRole), nullable=False)
-    business_type = db.Column(db.String(100), nullable=True)
+    password_hash = db.Column(db.String(200), nullable=False)
+    full_name = db.Column(db.String(120))
 
-
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    role = db.relationship('Role', backref='users', lazy=True)
     
+    company_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
+    # For contractors only
+    business_type_id = db.Column(db.Integer, db.ForeignKey('business_types.id'))
+
+     # Required by Flask-Login
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return str(self.id)
+
+    def is_authenticated(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+# ----------------------------
+# CLIENT COMPANIES
+# ----------------------------
 class Client(db.Model):
+    __tablename__ = 'clients'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    registration_number = db.Column(db.String(50), nullable=False)
-    year_built = db.Column(db.Integer, nullable=False)
-    number_of_units = db.Column(db.Integer, nullable=False)
+    
+    name = db.Column(db.String(150), nullable=False)
 
+    # Address fields
+    street = db.Column(db.String(255))
+    city = db.Column(db.String(100))
+    county = db.Column(db.String(100))
+    eircode = db.Column(db.String(20))
+    country = db.Column(db.String(100))
 
-class Contractor(db.Model):
+    registration_number = db.Column(db.String(100))
+    year_of_construction = db.Column(db.Integer)
+    number_of_units = db.Column(db.Integer)
+
+    # Foreign Key to assigned PM
+    assigned_pm_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationships
+    assigned_pm = db.relationship("User", backref="assigned_clients", foreign_keys=[assigned_pm_id])
+
+    users = db.relationship(
+        "User",
+        backref="client",
+        foreign_keys="User.company_id"
+    )
+
+    work_orders = db.relationship(
+        'WorkOrder',
+        backref='client_data',
+        lazy=True
+    )
+
+# ----------------------------
+# CLIENTS AND CONTRACTOR M2M
+# ----------------------------
+class ClientContractor(db.Model):
+    __tablename__ = 'client_contractor'
     id = db.Column(db.Integer, primary_key=True)
-    company_name = db.Column(db.String(100), nullable=False)
-    company_registration_number = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
-    telephone = db.Column(db.String(20), nullable=False)
-    accounts_contact_name = db.Column(db.String(100), nullable=False)
-    accounts_contact_email = db.Column(db.String(120), nullable=False)
-    address = db.Column(db.String(200), nullable=False)
-    business_type = db.Column(
-        db.String(50),
-        nullable=False
-    )  # plumbing, electrical, security, etc.
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-rejected_by = db.Column(db.Integer, nullable=True)  # contractor_id who rejected it
+# ----------------------------
+# CONTRACTOR PERFORMANCE
+# ----------------------------
+class ContractorPerformance(db.Model):
+    __tablename__ = 'contractor_performance'
+    id = db.Column(db.Integer, primary_key=True)
+    contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    work_order_id = db.Column(db.Integer, db.ForeignKey('work_order.id'), nullable=False)
+    reaction_time_minutes = db.Column(db.Integer)
+    completion_time_minutes = db.Column(db.Integer)
+    performance_rating = db.Column(db.String(10))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ----------------------------
+# MEDIA FILES
+# ----------------------------
+class MediaFile(db.Model):
+    __tablename__ = 'media_files'
+    id = db.Column(db.Integer, primary_key=True)
+    work_order_id = db.Column(db.Integer, db.ForeignKey('work_order.id'), nullable=False)
+    file_path = db.Column(db.String(255), nullable=False)
+    uploaded_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+# ----------------------------
+# EXISTING TABLES (SAMPLE: WORK ORDER)
+# ----------------------------
+class WorkOrder(db.Model):
+    __tablename__ = 'work_order'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120))
+    description = db.Column(db.Text)
+    status = db.Column(db.String(50))
+    created_by = db.Column(db.String(120))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    second_preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    business_type = db.Column(db.String(100))
+    rejected_by = db.Column(db.String(120))
+    completion_photo = db.Column(db.String(255))
+    occupant_name = db.Column(db.String(120))
+    occupant_apartment = db.Column(db.String(50))
+    occupant_phone = db.Column(db.String(50))
