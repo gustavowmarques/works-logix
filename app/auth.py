@@ -34,7 +34,7 @@ def login():
                 return redirect(url_for('auth.login'))
 
             login_user(user)
-            session['role'] = user.role.name
+            session["role"] = user.role.name.lower()
 
             flash('Login successful.', 'success')
 
@@ -68,47 +68,47 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('auth.login'))
 
-@auth_bp.route('/register', methods=['GET', 'POST'])
-@login_required
-@permission_required("create_user") 
-def register():
-    if current_user.role != UserRole.ADMIN:
-        abort(403)
+# @auth_bp.route('/register', methods=['GET', 'POST'])
+# @login_required
+# @permission_required("create_user") 
+# def register():
+#     if current_user.role != UserRole.ADMIN:
+#         abort(403)
 
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email'].strip().lower()
-        password = request.form['password']
-        role_str = request.form.get('role')
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         email = request.form['email'].strip().lower()
+#         password = request.form['password']
+#         role_str = request.form.get('role')
 
-        # Convert form role string to Enum safely
-        try:
-            role_enum = UserRole(role_str)
-        except ValueError:
-            flash("Invalid role selected.", "danger")
-            return redirect(url_for('auth.register'))
+#         # Convert form role string to Enum safely
+#         try:
+#             role_enum = UserRole(role_str)
+#         except ValueError:
+#             flash("Invalid role selected.", "danger")
+#             return redirect(url_for('auth.register'))
 
-        business_type = request.form.get('business_type') if role_enum == UserRole.CONTRACTOR else None
+#         business_type = request.form.get('business_type') if role_enum == UserRole.CONTRACTOR else None
 
-        new_user = User(
-            username=username,
-            email=email,
-            role=role_enum,
-            business_type=business_type,
-            password_hash=generate_password_hash(password)
-        )
+#         new_user = User(
+#             username=username,
+#             email=email,
+#             role=role_enum,
+#             business_type=business_type,
+#             password_hash=generate_password_hash(password)
+#         )
 
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            flash('Email already registered. Please use a different email.', 'danger')
-            return redirect(url_for('routes.register'))
+#         existing_user = User.query.filter_by(email=email).first()
+#         if existing_user:
+#             flash('Email already registered. Please use a different email.', 'danger')
+#             return redirect(url_for('routes.register'))
 
-        db.session.add(new_user)
-        db.session.commit()
+#         db.session.add(new_user)
+#         db.session.commit()
 
-        flash("User registered successfully.", "success")
-        return redirect(url_for('routes.home'))
+#         flash("User registered successfully.", "success")
+#         return redirect(url_for('routes.home'))
 
-    return render_template('register.html')
+#     return render_template('register.html')
 
 
