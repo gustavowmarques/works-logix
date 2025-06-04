@@ -42,8 +42,9 @@ class User(db.Model, UserMixin):
     role = db.relationship('Role', backref='users', lazy=True)
     
     company_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
+    company = db.relationship("Client", foreign_keys=[company_id], backref="employees")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
+    # client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
     # For contractors only
     business_type_id = db.Column(db.Integer, db.ForeignKey('business_types.id'))
 

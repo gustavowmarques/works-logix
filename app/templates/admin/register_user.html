@@ -1,49 +1,56 @@
 {% extends 'base.html' %}
-
+{% block title %}Register New User{% endblock %}
 {% block content %}
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Register New User</h2>
-
-    <form method="POST" action="{{ url_for('admin_routes.register_user') }}">
-        <div class="form-group mb-3">
-            <label for="full_name">Full Name</label>
-            <input type="text" name="full_name" class="form-control" required>
-        </div>
-
-        <div class="form-group mb-3">
-            <label for="email">Email</label>
-            <input type="email" name="email" class="form-control" required>
-        </div>
-
-        <div class="form-group mb-3">
-            <label for="password">Password</label>
-            <input type="password" name="password" class="form-control" required>
-        </div>
-
-        <div class="form-group mb-4">
-            <label for="role_id">Select Role</label>
-            <select class="form-select" id="roleSelect" name="role_id" onchange="toggleContractorFields()" required>
-                <option value="">-- Select Role --</option>
-                {% for role in roles %}
-                <option value="{{ role.id }}" data-name="{{ role.name }}">{{ role.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        
-        <div id="contractorFields" style="display: none;">
-            <div class="form-group mb-3">
-                <label for="business_type_id">Business Type</label>
-                <select class="form-select" name="business_type_id">
-                    <option value="">-- Select Type --</option>
-                    {% for bt in business_types %}
-                    <option value="{{ bt.id }}">{{ bt.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-        
-
-        <button type="submit" class="btn btn-success w-100">Register User</button>
-    </form>
-</div>
+<h2>Register New User</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label for="full_name" class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="full_name" name="full_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" name="password" required>
+    </div>
+    <div class="mb-3">
+        <label for="role_id" class="form-label">Role</label>
+        <select class="form-select" name="role_id" id="roleSelect" required onchange="toggleContractorFields()">
+            <option value="">-- Select Role --</option>
+            {% for role in roles %}
+                <option value="{{ role.id }}">{{ role.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="company_id" class="form-label">Assign to Management Company</label>
+        <select class="form-select" name="company_id" required>
+            <option value="">-- Select Company --</option>
+            {% for client in companies %}
+                <option value="{{ client.id }}">{{ client.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="client_id" class="form-label">Assign to Client (Optional)</label>
+        <select class="form-select" name="client_id">
+            <option value="">-- Select Client --</option>
+            {% for client in clients %}
+                <option value="{{ client.id }}">{{ client.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3" id="contractorFields" style="display: none;">
+        <label for="business_type_id" class="form-label">Business Type</label>
+        <select class="form-select" name="business_type_id">
+            <option value="">-- Select Type --</option>
+            {% for type in business_types %}
+                <option value="{{ type.id }}">{{ type.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
 {% endblock %}

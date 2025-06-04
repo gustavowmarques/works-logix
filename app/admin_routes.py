@@ -2,6 +2,8 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required, current_user
 from app.decorators import permission_required
 from app.models import User, Role, WorkOrder, Client, db, BusinessType
+from werkzeug.security import generate_password_hash
+
 
 
 
@@ -134,34 +136,36 @@ def delete_user(user_id):
 
 @admin_routes_bp.route('/admin/users/register', methods=['GET', 'POST'], endpoint='register_user')
 @login_required
-@permission_required("create_user") 
+@permission_required('admin')
 def register_user():
     roles = Role.query.all()
+    companies = Client.query.all()
+    clients = Client.query.all()
+    business_types = BusinessType.query.all()
 
     if request.method == 'POST':
         full_name = request.form.get('full_name')
         email = request.form.get('email')
         password = request.form.get('password')
         role_id = request.form.get('role_id')
+        company_id = request.form.get('company_id')
+        client_id = request.form.get('client_id') or None
+        business_type_id = request.form.get('business_type_id') or None
 
-        if not (full_name and email and password and role_id):
-            flash("All fields are required.", "danger")
-            return redirect(url_for('admin_routes.register_user'))
-
-        existing_user = User.query.filter_by(email=email).first()
-        if existing_user:
-            flash("A user with this email already exists.", "danger")
-            return redirect(url_for('admin_routes.register_user'))
-
-        from werkzeug.security import generate_password_hash
         hashed_password = generate_password_hash(password)
-
-        new_user = User(full_name=full_name, email=email, password_hash=hashed_password, role_id=role_id)
+        new_user = User(
+            full_name=full_name,
+            email=email,
+            password_hash=hashed_password,
+            role_id=role_id,
+            company_id=company_id,
+            client_id=client_id,
+            business_type_id=business_type_id
+        )
         db.session.add(new_user)
         db.session.commit()
-
-        flash("User registered successfully.", "success")
+        flash('User registered successfully.', 'success')
         return redirect(url_for('admin_routes.view_all_users'))
 
-    return render_template('admin/register_user.html', roles=roles, business_types=BusinessType.query.all())
+    return render_template('admin/register_user.html', roles=roles, companies=companies, clients=clients, business_types=business_types)
 
