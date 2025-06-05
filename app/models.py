@@ -37,18 +37,22 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     full_name = db.Column(db.String(120))
+    telephone = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Role
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     role = db.relationship('Role', backref='users', lazy=True)
-    
+
+    # Contractor-specific business type
+    business_type_id = db.Column(db.Integer, db.ForeignKey('business_types.id'))
+    business_type = db.relationship("BusinessType", foreign_keys=[business_type_id])
+
+    # Company (e.g., Management Company they work for)
     company_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
     company = db.relationship("Client", foreign_keys=[company_id], backref="employees")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    # client_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
-    # For contractors only
-    business_type_id = db.Column(db.Integer, db.ForeignKey('business_types.id'))
 
-     # Required by Flask-Login
+    # Flask-Login integration
     def is_active(self):
         return True
 
@@ -60,6 +64,7 @@ class User(db.Model, UserMixin):
 
     def is_anonymous(self):
         return False
+
 
 # ----------------------------
 # CLIENT COMPANIES

@@ -3,7 +3,7 @@ from flask_login import login_required, current_user
 from app.decorators import permission_required
 from app.models import User, Role, WorkOrder, Client, db, BusinessType
 from werkzeug.security import generate_password_hash
-
+from app.forms import RegisterUserForm
 
 
 
@@ -57,6 +57,7 @@ def register_client():
         year_of_construction = request.form.get('year_of_construction')
         number_of_units = request.form.get('number_of_units')
         property_manager_id = request.form.get('property_manager_id')
+        
 
         if not name or not street or not city or not county or not country:
             flash("All address fields and name are required.", "danger")
@@ -138,34 +139,31 @@ def delete_user(user_id):
 @login_required
 @permission_required('admin')
 def register_user():
-    roles = Role.query.all()
-    companies = Client.query.all()
-    clients = Client.query.all()
-    business_types = BusinessType.query.all()
+    form = RegisterUserForm()
 
-    if request.method == 'POST':
-        full_name = request.form.get('full_name')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role_id = request.form.get('role_id')
-        company_id = request.form.get('company_id')
-        client_id = request.form.get('client_id') or None
-        business_type_id = request.form.get('business_type_id') or None
+    # Populate dropdowns with live DB values
+    form.role_id.choices = [(role.id, role.name) for role in Role.query.all()]
+    form.company_id.choices = [(c.id, c.name) for c in Client.query.all()]
+    form.business_type_id.choices = [(bt.id, bt.name) for bt in BusinessType.query.all()]
+    form.business_type_id.choices.insert(0, (0, 'Select Business Type'))  # Optional default
 
-        hashed_password = generate_password_hash(password)
+    if form.validate_on_submit():
+        hashed_password = generate_password_hash(form.password.data)
+
         new_user = User(
-            full_name=full_name,
-            email=email,
+            full_name=form.full_name.data,
+            telephone=form.telephone.data,
+            email=form.email.data,
             password_hash=hashed_password,
-            role_id=role_id,
-            company_id=company_id,
-            client_id=client_id,
-            business_type_id=business_type_id
+            role_id=form.role_id.data,
+            company_id=form.company_id.data,
+            business_type_id=form.business_type_id.data if form.business_type_id.data != 0 else None
         )
         db.session.add(new_user)
         db.session.commit()
         flash('User registered successfully.', 'success')
         return redirect(url_for('admin_routes.view_all_users'))
 
-    return render_template('admin/register_user.html', roles=roles, companies=companies, clients=clients, business_types=business_types)
+    return render_template('admin/register_user.html', form=form)
+
 

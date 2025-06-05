@@ -1,36 +1,18 @@
-console.log("script.js loaded");
+document.addEventListener("DOMContentLoaded", function () {
+  const roleSelect = document.getElementById("roleSelect");
+  const contractorFields = document.getElementById("contractorFields");
+  const pmFields = document.getElementById("pmFields");
 
-function toggleContractorFields() {
-  const roleDropdown = document.getElementById('roleSelect');
-  const selectedOption = roleDropdown.options[roleDropdown.selectedIndex];
-  const roleName = selectedOption.dataset.name;
-  const contractorFields = document.getElementById('contractorFields');
-
-  if (roleName === 'Contractor') {
-    contractorFields.style.display = 'block';
-  } else {
-    contractorFields.style.display = 'none';
+  function toggleFields() {
+    const selectedRole = roleSelect.options[roleSelect.selectedIndex].text.toLowerCase();
+    contractorFields.style.display = selectedRole.includes("contractor") ? "block" : "none";
+    pmFields.style.display = selectedRole.includes("property manager") ? "block" : "none";
   }
-}
 
-
-function filterContractorsByType() {
-  const selectedType = document.getElementById('business_type').value;
-  ['preferred_contractor_id', 'second_preferred_contractor_id'].forEach(selectId => {
-    const dropdown = document.getElementById(selectId);
-    Array.from(dropdown.options).forEach(opt => {
-      if (!opt.value) return;
-      opt.style.display = (opt.dataset.type === selectedType) ? 'block' : 'none';
-    });
-    dropdown.selectedIndex = 0;
-  });
-}
-
-window.addEventListener("DOMContentLoaded", function () {
-  toggleContractorFields();
-
-  // ✅ Add this line to enable toggle on role change
-  document.getElementById('roleSelect')?.addEventListener('change', toggleContractorFields);
+  if (roleSelect) {
+    roleSelect.addEventListener("change", toggleFields);
+    toggleFields(); // Run once on page load
+  }
 
   // Auto-dismiss alerts after 4 seconds
   setTimeout(function () {
@@ -41,30 +23,29 @@ window.addEventListener("DOMContentLoaded", function () {
   }, 4000);
 });
 
-async function fetchAddressFromEircode(eircode) {
-  if (!eircode) return;
+// Filters contractor dropdowns by selected business type
+function filterContractorsByType() {
+  const selectedType = document.getElementById('business_type').value;
+  ['preferred_contractor_id', 'second_preferred_contractor_id'].forEach(selectId => {
+    const dropdown = document.getElementById(selectId);
+    Array.from(dropdown.options).forEach(opt => {
+      if (!opt.value) return; // Skip the default "-- Select --"
+      opt.style.display = opt.getAttribute('data-type') === selectedType ? 'block' : 'none';
+    });
+  });
+}
 
-  const apiKey = 'dXKkNR7OtA4jkRBKE5RoKLHSIKwx4twN88jFCZNe-Cc';
-  const url = `https://geocode.search.hereapi.com/v1/geocode?q=${encodeURIComponent(eircode)}&apiKey=${apiKey}`;
+// Fetch address based on Eircode
+function fetchAddressFromEircode() {
+  const eircode = document.getElementById("eircode").value;
+  const addressField = document.getElementById("address");
 
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (data.items && data.items.length > 0) {
-      const result = data.items[0].address;
-      document.getElementById("street").value = result.street || '';
-      document.getElementById("city").value = result.city || '';
-      document.getElementById("county").value = result.county || '';
-
-      if (document.getElementById("country") && !document.getElementById("country").value) {
-        document.getElementById("country").value = result.countryName || '';
-      }
-    } else {
-      alert("Address not found for this Eircode.");
-    }
-  } catch (error) {
-    console.error("Address fetch error:", error);
-    alert("Error fetching address. Please enter it manually.");
-  }
+  fetch(`https://api.eircode.ie/address/${eircode}`)
+    .then(response => response.json())
+    .then(data => {
+      addressField.value = data.address || '';
+    })
+    .catch(error => {
+      console.error("Failed to fetch address:", error);
+    });
 }
