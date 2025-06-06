@@ -17,7 +17,7 @@
         <tbody>
             {% for contractor in contractors %}
             <tr>
-                <td>{{ contractor.full_name if contractor.company else 'N/A' }}</td>
+                <td>{{ contractor.full_name or 'N/A' }}</td>
                 <td>{{ contractor.email }}</td>
                 <td>{{ contractor.telephone }}</td>
                 <td>{{ contractor.business_type.name if contractor.business_type else 'N/A' }}

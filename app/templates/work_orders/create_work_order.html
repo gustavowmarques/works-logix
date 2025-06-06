@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-5">
   <h2>Create Work Order</h2>
-  <form method="POST" action="{{ url_for('routes.update_work_order', order_id=order.id) if order else url_for('routes.create_work_order') }}">
+  <form method="POST" action="{{ url_for('routes.update_work_order', order_id=order.id) if order else url_for('manager_routes.create_work_order') }}">
     <div class="mb-3">
       <label for="title" class="form-label">Title</label>
       <input type="text" class="form-control" id="title" name="title" value="{{ order.title if order else '' }}" required>
