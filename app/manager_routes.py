@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
-from app.decorators import permission_required
-from app.models import db, WorkOrder
+from app.decorators import permission_required, role_required
+from app.models import db, WorkOrder, Client, User, Role, BusinessType
 
 manager_routes_bp = Blueprint('manager_routes', __name__)
 
@@ -20,6 +20,7 @@ def manager_home():
 # ----------------------
 @manager_routes_bp.route('/manager/work-orders/create', methods=['GET', 'POST'])
 @login_required
+@role_required(['Property Manager', 'Admin']) 
 @permission_required("create_work_order")
 def create_work_order():
     if request.method == 'POST':
@@ -39,8 +40,23 @@ def create_work_order():
         db.session.commit()
         flash('Work order created successfully.', 'success')
         return redirect(url_for('manager_routes.manager_home'))
+    
+    # Fetch dropdown values
+    if current_user.role.name == 'Admin':
+        clients = Client.query.all()
+    else:
+        clients = Client.query.filter_by(assigned_property_manager_id=current_user.id).all()
 
-    return render_template('work_orders/create_work_order.html')
+    contractors = User.query.filter(User.role.has(name='Contractor')).all()
+    contractor_categories = list({c.business_type.name for c in contractors if c.business_type})
+
+    return render_template(
+        'work_orders/create_work_order.html',
+        clients=clients,
+        contractors=contractors,
+        contractor_categories=contractor_categories,
+        order=None
+    )
 
 # ----------------------
 # View Single Work Order (optional)

@@ -43,9 +43,9 @@
       <select class="form-control" name="preferred_contractor_id" id="preferred_contractor_id">
         <option value="">-- Select --</option>
         {% for contractor in contractors %}
-          <option value="{{ contractor.id }}" data-type="{{ contractor.business_type }}"
+          <option value="{{ contractor.id }}" data-type="{{ contractor.business_type.name if contractor.business_type else '' }}"
             {% if order and contractor.id == order.preferred_contractor_id %}selected{% endif %}>
-            {{ contractor.username }} - {{ contractor.business_type }}
+            {{ contractor.full_name or contractor.email }} - {{ contractor.business_type.name if contractor.business_type else 'No Type' }}
           </option>
         {% endfor %}
       </select>
@@ -57,9 +57,9 @@
       <select class="form-control" name="second_preferred_contractor_id" value="{{ order.second_preferred_contractor_id if order else '' }}" id="second_preferred_contractor_id">
         <option value="">-- Select --</option>
         {% for contractor in contractors %}
-          <option value="{{ contractor.id }}" data-type="{{ contractor.business_type }}"
-          {% if order and contractor.id == order.second_preferred_contractor_id %}selected{% endif %}>
-            {{ contractor.username }} - {{ contractor.business_type }}
+          <option value="{{ contractor.id }}" data-type="{{ contractor.business_type.name if contractor.business_type else '' }}"
+            {% if order and contractor.id == order.second_preferred_contractor_id %}selected{% endif %}>
+            {{ contractor.full_name or contractor.email }} - {{ contractor.business_type.name if contractor.business_type else 'No Type' }}
           </option>
         {% endfor %}
       </select>

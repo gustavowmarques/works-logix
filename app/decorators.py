@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import session, flash, redirect, url_for
 from app.models import Role, RolePermission
-
+from flask_login import current_user
 
 def permission_required(permission):
     def decorator(f):
@@ -37,4 +37,13 @@ def permission_required(permission):
         return decorated_function
     return decorator
 
-
+def role_required(roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if current_user.role and current_user.role.name in roles:
+                return f(*args, **kwargs)
+            flash("You do not have access to this resource.", "danger")
+            return redirect(url_for("auth.login"))
+        return decorated_function
+    return decorator
