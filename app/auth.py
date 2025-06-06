@@ -43,7 +43,10 @@ def login():
             if role_name == 'admin':
                 return redirect(url_for('admin_routes.admin_dashboard'))
             elif role_name == 'property manager':
-                return redirect(url_for('manager_routes.manager_home'))
+                if current_user.role.name == "Admin":
+                    return redirect(url_for('admin_routes.admin_dashboard'))  # or your actual admin dashboard route
+                else:
+                    return redirect(url_for('manager_routes.manager_home'))
             elif role_name == 'contractor':
                 return redirect(url_for('contractor_routes.contractor_home'))
             else:

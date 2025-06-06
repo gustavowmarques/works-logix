@@ -2,7 +2,8 @@
 {% block content %}
 <div class="container mt-4">
     <h2>All Work Orders</h2>
-    {% include 'partials/work_orders_table.html' with context %}
+    {% set orders = work_orders %}
+    {% include 'partials/work_orders_table.html' %}
     <h4>Returned Work Orders</h4>
     {% include 'work_orders/returned_orders_table.html' with context %}
 </div>

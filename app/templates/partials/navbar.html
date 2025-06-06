@@ -27,7 +27,7 @@
               <a class="nav-link" href="{{ url_for('admin_routes.admin_dashboard') }}">Dashboard</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin_routes.admin_work_orders') }}">Work Orders</a>
+              <a class="nav-link" href="{{ url_for('admin_routes.view_all_work_orders') }}">Work Orders</a>
             </li>
           {% elif role_name == 'property manager' %}
             <li class="nav-item">

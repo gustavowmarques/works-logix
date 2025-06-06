@@ -14,7 +14,7 @@
     <tr>
       <td>{{ order.title }}</td>
       <td>{{ order.status }}</td>
-      <td>{{ order.client.name }}</td>
+      <td>{{ order.client.name if order.client else '—' }}</td>
       <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '—' }}</td>
       <td>
         <a href="{{ url_for('manager_routes.view_work_order', order_id=order.id) }}" class="btn btn-sm btn-info">View</a>

@@ -17,11 +17,13 @@ def admin_dashboard():
     return render_template("admin/admin_dashboard.html")
 
 # View All Work Orders
-@admin_routes_bp.route('/admin/work-orders', endpoint='admin_work_orders')
+@admin_routes_bp.route('/admin/work-orders', methods=['GET'], endpoint='view_all_work_orders')
 @login_required
+@permission_required("view_all_work_orders")
 def admin_work_orders():
     work_orders = WorkOrder.query.all() 
-    return render_template("admin/admin_work_orders.html", work_orders=work_orders)
+    returned_orders = WorkOrder.query.filter_by(status='Returned').all()
+    return render_template("admin/admin_work_orders.html", work_orders=work_orders, returned_orders=returned_orders)
 
 
 # View All Users

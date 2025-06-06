@@ -27,19 +27,37 @@ def create_work_order():
         title = request.form['title']
         description = request.form['description']
         client_id = request.form['client_id']
+        business_type = request.form.get('business_type')
+        preferred_contractor_id = request.form.get('preferred_contractor_id') or None
+        second_preferred_contractor_id = request.form.get('second_preferred_contractor_id') or None
+
+        occupant_apartment = request.form.get('occupant_apartment') or ''
+        occupant_name = request.form.get('occupant_name') or ''
+        occupant_phone = request.form.get('occupant_phone') or ''
+
         created_by = current_user.full_name or current_user.email
 
         new_order = WorkOrder(
             title=title,
             description=description,
             client_id=client_id,
+            business_type=business_type,
+            preferred_contractor_id=preferred_contractor_id,
+            second_preferred_contractor_id=second_preferred_contractor_id,
+            occupant_apartment=occupant_apartment,
+            occupant_name=occupant_name,
+            occupant_phone=occupant_phone,
             created_by=created_by,
             status='Open'
         )
         db.session.add(new_order)
         db.session.commit()
         flash('Work order created successfully.', 'success')
-        return redirect(url_for('manager_routes.manager_home'))
+        
+        if current_user.role.name == "Admin":
+            return redirect(url_for('admin_routes.admin_dashboard')) 
+        else:
+            return redirect(url_for('manager_routes.manager_home'))
     
     # Fetch dropdown values
     if current_user.role.name == 'Admin':
@@ -71,10 +89,10 @@ def view_work_order(order_id):
 # ----------------------
 # Edit Work Order (optional)
 # ----------------------
-@manager_routes_bp.route('/manager/work-orders/update/<int:order_id>', methods=['POST'], endpoint='update_work_order')
+@manager_routes_bp.route('/manager/work-orders/update/<int:order_id>', methods=['POST'], endpoint='edit_work_order')
 @login_required
 @permission_required("edit_work_order")
-def update_work_order(order_id):
+def edit_work_order(order_id):
     order = WorkOrder.query.get_or_404(order_id)
     
     # Get new data from form
