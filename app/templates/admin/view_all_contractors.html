@@ -17,10 +17,11 @@
         <tbody>
             {% for contractor in contractors %}
             <tr>
-                <td>{{ contractor.company_name }}</td>
+                <td>{{ contractor.full_name if contractor.company else 'N/A' }}</td>
                 <td>{{ contractor.email }}</td>
                 <td>{{ contractor.telephone }}</td>
-                <td>{{ contractor.business_type }}</td>
+                <td>{{ contractor.business_type.name if contractor.business_type else 'N/A' }}
+                </td>
             </tr>
             {% endfor %}
         </tbody>
