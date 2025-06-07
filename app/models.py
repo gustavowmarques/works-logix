@@ -1,3 +1,7 @@
+# This file defines the database models for the Works Logix system using SQLAlchemy.
+# Defines SQLAlchemy models: User, Role, RolePermission, Client, WorkOrder
+# Includes relationships, foreign keys, and structure for RBAC and data access
+
 from app.extensions import db
 from datetime import datetime
 from flask_login import UserMixin
@@ -15,12 +19,15 @@ class BusinessType(db.Model):
 # ----------------------------
 # ROLES
 # ----------------------------
+# Role table for user access levels
+# Roles such as Admin, Contractor, Property Manager
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     description = db.Column(db.String(255))
 
+# Association table between roles and permissions (many-to-many)
 class RolePermission(db.Model):
     __tablename__ = 'role_permissions'
     id = db.Column(db.Integer, primary_key=True)
@@ -30,6 +37,8 @@ class RolePermission(db.Model):
 # ----------------------------
 # USERS
 # ----------------------------
+# User Model
+# The user table handles login and identification
 class User(db.Model, UserMixin):
     __tablename__ = 'user'
 
@@ -49,7 +58,10 @@ class User(db.Model, UserMixin):
     business_type = db.relationship("BusinessType", foreign_keys=[business_type_id])
 
     # Company (e.g., Management Company they work for)
+    # Company association for Contractor or Client
     company_id = db.Column(db.Integer, db.ForeignKey('clients.id'))
+
+    # Relationship to access company/client details
     company = db.relationship("Client", foreign_keys=[company_id], backref="employees")
 
     # Flask-Login integration
@@ -69,13 +81,16 @@ class User(db.Model, UserMixin):
 # ----------------------------
 # CLIENT COMPANIES
 # ----------------------------
+# Client modelfor management companies or sites
+# Client represents a company or OMC being managed
+
 class Client(db.Model):
     __tablename__ = 'clients'
     id = db.Column(db.Integer, primary_key=True)
     
     name = db.Column(db.String(150), nullable=False)
 
-    # Address fields
+    # Address fields and registration details
     street = db.Column(db.String(255))
     city = db.Column(db.String(100))
     county = db.Column(db.String(100))
@@ -87,17 +102,21 @@ class Client(db.Model):
     number_of_units = db.Column(db.Integer)
 
     # Foreign Key to assigned PM
+    # Assigned Property Manager
     assigned_pm_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     # Relationships
     assigned_pm = db.relationship("User", backref="assigned_clients", foreign_keys=[assigned_pm_id])
 
+    # One-to-Many relationship with users
+    # Users that belong to this client (i.e. contractor employees)
     users = db.relationship(
         "User",
         backref="client",
         foreign_keys="User.company_id"
     )
 
+    # Work orders related to this client
     work_orders = db.relationship(
         'WorkOrder',
         backref='client_data',
@@ -140,23 +159,34 @@ class MediaFile(db.Model):
 # ----------------------------
 # EXISTING TABLES (SAMPLE: WORK ORDER)
 # ----------------------------
+# Work order model
+# WorkOrder represents a task assigned to a contractorfor a client
 class WorkOrder(db.Model):
     __tablename__ = 'work_order'
     id = db.Column(db.Integer, primary_key=True)
+
+    # Basic info
     title = db.Column(db.String(120))
     description = db.Column(db.Text)
     status = db.Column(db.String(50))
+    due_date = db.Column(db.Date)
+
+    # Relationship backrefs to access user details
     created_by = db.Column(db.String(120))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
-    contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     second_preferred_contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+
+    # Foreign keys to client and contractors
+    client_id = db.Column(db.Integer, db.ForeignKey('clients.id'), nullable=False)
+    contractor_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+        
     business_type = db.Column(db.String(100))
     rejected_by = db.Column(db.String(120))
     completion_photo = db.Column(db.String(255))
     occupant_name = db.Column(db.String(120))
     occupant_apartment = db.Column(db.String(50))
     occupant_phone = db.Column(db.String(50))
-    due_date = db.Column(db.Date)
+    
 

@@ -5,6 +5,8 @@
     <div class="card mb-3">
         <div class="card-body">
             <h5 class="card-title">{{ work_order.title }}</h5>
+            
+            <!-- Display all relevant fields of the selected work order -->
             <p class="card-text"><strong>Description:</strong> {{ work_order.description }}</p>
             <p class="card-text"><strong>Status:</strong> {{ work_order.status }}</p>
             <p class="card-text"><strong>Client:</strong> {{ work_order.client_data.name }}</p>

@@ -1,13 +1,17 @@
+# This file defines routes for Contractors to interact with assigned Work Orders.
+# Contractors can view assigned work orders, accept/reject, and upload completion info.
+
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 from app.decorators import permission_required, role_required
 from app.models import db, WorkOrder
 
-
+# Create the Blueprint for contractor routes
 contractor_routes_bp = Blueprint('contractor_routes', __name__)
 
 # Define a route for contractor-related operations
+# Contractor home routeshowing assigned or accepted work orders
 @contractor_routes_bp.route('/contractor/home')
 @login_required
 @role_required(['Contractor'])
@@ -16,6 +20,8 @@ contractor_routes_bp = Blueprint('contractor_routes', __name__)
 # View function for contractor dashboard to show assigned work orders
 def contractor_home():
     contractor_id = current_user.id
+
+    # Fetch work orders where user is preferred, second preferred, or already assigned
     orders = WorkOrder.query.filter(
         or_(
             WorkOrder.preferred_contractor_id == contractor_id,
@@ -53,6 +59,7 @@ def complete_work_order(order_id):
     return redirect(url_for('contractor.contractor_home'))
 
 # Define a route for contractor-related operations
+# View details of a specific work order
 @contractor_routes_bp.route('/contractor/work-orders/<int:order_id>', endpoint='view_work_order')
 @login_required
 @role_required(['Contractor'])
@@ -60,6 +67,7 @@ def complete_work_order(order_id):
 def view_work_order(order_id):
     from app.models import WorkOrder
 
+    # Get the specific work order
     work_order = WorkOrder.query.get_or_404(order_id)
 
     # Optional: check that the contractor has permission to see it

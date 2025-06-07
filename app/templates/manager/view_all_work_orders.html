@@ -3,6 +3,8 @@
 {% block content %}
 <div class="container mt-4">
   <h2 class="mb-4">All Work Orders</h2>
+
+  <!-- Reuse partial template to avoid duplication -->
   {% include 'partials/work_orders_table.html' %}
 </div>
 {% endblock %}

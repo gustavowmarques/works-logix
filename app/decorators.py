@@ -1,3 +1,6 @@
+# This file defines custom decorators for role-based and permission-based access control.
+# Retricts routes based on roles and permissions
+
 from functools import wraps
 from flask import session, flash, redirect, url_for
 from app.models import Role, RolePermission
@@ -5,6 +8,7 @@ from app import db
 from flask_login import current_user
 from sqlalchemy import func
 
+# Restrict route to users with specific permissions
 def permission_required(permission):
     def decorator(f):
         @wraps(f)
@@ -35,6 +39,7 @@ def permission_required(permission):
         return decorated_function
     return decorator
 
+# Restrict route to users with specific role(s)
 def role_required(roles):
     def decorator(f):
         @wraps(f)

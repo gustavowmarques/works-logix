@@ -1,3 +1,7 @@
+# App factory function for creating the Flask app
+# Loads config, initializes extensions, registers Blueprints, and sets up login handling
+
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -38,7 +42,7 @@ def create_app():
     # Login user loader
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return User.query.get(int(user_id)) # Load user from ID
 
     # Inject role constants into templates
     @app.context_processor

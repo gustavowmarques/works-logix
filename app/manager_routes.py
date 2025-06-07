@@ -1,3 +1,5 @@
+# This file handles routes accessible by Property Managers in the Works Logix system.
+
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.decorators import permission_required, role_required
@@ -37,6 +39,8 @@ def manager_home():
 @role_required(['Property Manager', 'Admin']) 
 @permission_required("create_work_order")
 def create_work_order():
+
+    # Allow Property Managers to create work orders
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
@@ -114,6 +118,7 @@ def create_work_order():
 @login_required
 @permission_required("view_work_order")
 def view_all_work_orders():
+     # Show work orders created by the current property manager
     work_orders = WorkOrder.query.all()
     return render_template('manager/view_all_work_orders.html', work_orders=work_orders)
 

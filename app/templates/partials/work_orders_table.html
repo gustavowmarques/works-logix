@@ -1,4 +1,6 @@
 {% if orders %}
+
+<!-- This is a reusable HTML partial for displaying work orders in table format -->
 <table class="table table-striped">
   <thead>
     <tr>
@@ -17,6 +19,7 @@
       <td>{{ order.client_data.name if order.client_data else '—' }}</td>
       <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '—' }}</td>
       <td>
+        <!-- Link to view individual work order -->
         <a href="{{ url_for('manager_routes.view_work_order', order_id=order.id) }}" class="btn btn-sm btn-info">View</a>
         {% if order.status != 'Completed' %}
         <a href="{{ url_for('shared_routes.update_work_order', order_id=order.id) }}" class="btn btn-sm btn-primary">Edit</a>

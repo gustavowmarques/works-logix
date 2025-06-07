@@ -2,6 +2,8 @@
 {% block content %}
 <div class="container mt-4">
     <h2>All Work Orders</h2>
+
+    <!-- Include table layout to list work orders -->
     {% include 'partials/work_orders_table.html' with context %}
     <h4>Returned Work Orders</h4>
     {% include 'work_orders/returned_orders_table.html' with context %}
