@@ -18,10 +18,9 @@ manager_routes_bp = Blueprint('manager_routes', __name__)
 def manager_home():
     from app.models import WorkOrder
 
-    full_name = current_user.full_name
-
+    email = current_user.email
     work_orders = WorkOrder.query.filter(
-        WorkOrder.created_by == full_name
+        WorkOrder.created_by == email
     ).filter(
         (WorkOrder.status == 'Open') | (WorkOrder.status == 'Returned to Creator')
     ).all()
@@ -60,7 +59,7 @@ def create_work_order():
         occupant_name = request.form.get('occupant_name') or ''
         occupant_phone = request.form.get('occupant_phone') or ''
 
-        created_by = current_user.full_name or current_user.email
+        created_by = current_user.email
 
         due_date_str = request.form.get('due_date')
         due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else None

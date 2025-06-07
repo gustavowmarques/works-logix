@@ -19,7 +19,7 @@
             <tr>
                 <td>{{ order.title }}</td>
                 <td>{{ order.status }}</td>
-                <td>{{ order.client.name }}</td>
+                <td>{{ order.client_data.name }}</td>
                 <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '—' }}</td>
                 <td>
                     <a href="{{ url_for('contractor_routes.view_work_order', order_id=order.id) }}" class="btn btn-primary btn-sm">View</a>

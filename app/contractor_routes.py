@@ -13,13 +13,13 @@ contractor_routes_bp = Blueprint('contractor_routes', __name__)
 @permission_required("view_contractor_dashboard")
 def contractor_home():
     contractor_id = current_user.id
-    work_orders = WorkOrder.query.filter(
+    orders = WorkOrder.query.filter(
         or_(
             WorkOrder.preferred_contractor_id == contractor_id,
             WorkOrder.contractor_id == contractor_id
         )
     ).all()
-    return render_template('contractor/contractor_home.html', work_orders=work_orders)
+    return render_template('contractor/contractor_home.html', orders=orders)
 
 @contractor_routes_bp.route('/contractor/reject/<int:order_id>', methods=['POST'])
 @login_required
@@ -44,3 +44,20 @@ def complete_work_order(order_id):
     db.session.commit()
     flash('Work order marked as completed.', 'success')
     return redirect(url_for('contractor.contractor_home'))
+
+@contractor_routes_bp.route('/contractor/work-orders/<int:order_id>', endpoint='view_work_order')
+@login_required
+@role_required(['Contractor'])
+@permission_required("view_contractor_dashboard")
+def view_work_order(order_id):
+    from app.models import WorkOrder
+
+    work_order = WorkOrder.query.get_or_404(order_id)
+
+    # Optional: check that the contractor has permission to see it
+    contractor_id = current_user.id
+    if work_order.preferred_contractor_id != contractor_id and work_order.contractor_id != contractor_id:
+        flash("You are not authorized to view this work order.", "danger")
+        return redirect(url_for('contractor_routes.contractor_home'))
+
+    return render_template('contractor/view_work_order.html', order=work_order)
