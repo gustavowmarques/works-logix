@@ -7,10 +7,13 @@ from app.models import db, WorkOrder
 
 contractor_routes_bp = Blueprint('contractor_routes', __name__)
 
+# Define a route for contractor-related operations
 @contractor_routes_bp.route('/contractor/home')
 @login_required
 @role_required(['Contractor'])
 @permission_required("view_contractor_dashboard")
+
+# View function for contractor dashboard to show assigned work orders
 def contractor_home():
     contractor_id = current_user.id
     orders = WorkOrder.query.filter(
@@ -21,9 +24,12 @@ def contractor_home():
     ).all()
     return render_template('contractor/contractor_home.html', orders=orders)
 
+# Define a route for contractor-related operations
 @contractor_routes_bp.route('/contractor/reject/<int:order_id>', methods=['POST'])
 @login_required
 @permission_required("reject_work_order")
+
+# View to handle contractor rejecting a work order
 def reject_work_order(order_id):
     order = WorkOrder.query.get_or_404(order_id)
     if order.contractor_id != current_user.id:
@@ -33,6 +39,7 @@ def reject_work_order(order_id):
     flash('Work order rejected.', 'info')
     return redirect(url_for('contractor.contractor_home'))
 
+# Define a route for contractor-related operations
 @contractor_routes_bp.route('/contractor/complete/<int:order_id>', methods=['POST'])
 @login_required
 @permission_required("complete_work_order")
@@ -45,6 +52,7 @@ def complete_work_order(order_id):
     flash('Work order marked as completed.', 'success')
     return redirect(url_for('contractor.contractor_home'))
 
+# Define a route for contractor-related operations
 @contractor_routes_bp.route('/contractor/work-orders/<int:order_id>', endpoint='view_work_order')
 @login_required
 @role_required(['Contractor'])

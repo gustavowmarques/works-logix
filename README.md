@@ -35,11 +35,11 @@ The ERD below outlines the core tables and relationships between Users, Clients,
 
 ## Roles & Permissions
 
-| Role           | Permissions                                                        |
-|----------------|---------------------------------------------------------------------|
-| Admin          | Manage users and clients, full access                              |
-| Property Manager | Create work orders, view only their orders                       |
-| Contractor     | View & update assigned work orders, upload media, mark complete    |
+| Role            | Permissions                                                        |
+|-----------------|---------------------------------------------------------------------|
+| Admin           | Manage users and clients, full access                              |
+| Property Manager| Create work orders, view only their orders                         |
+| Contractor      | View & update assigned work orders, upload media, mark complete    |
 
 ## File Structure
 
@@ -58,3 +58,36 @@ The ERD below outlines the core tables and relationships between Users, Clients,
    ```bash
    git clone https://github.com/gustavowmarques/works-logix.git
    cd works-logix
+   ```
+
+2. Create and activate virtual environment:
+   ```bash
+   python -m venv venv
+   venv\Scripts\activate   # On Windows
+   ```
+
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. Set environment variables in a `.env` file (example below):
+   ```env
+   FLASK_APP=run.py
+   FLASK_ENV=development
+   SECRET_KEY=your_secret
+   DATABASE_URL=your_postgres_connection_string
+   ```
+
+5. Run the app:
+   ```bash
+   flask run
+   ```
+
+## Comments and Documentation
+
+All Python route and model files are commented to explain key functionality, relationships, and access control logic to demonstrate understanding of the codebase.
+
+## Author
+
+Created by Gustavo Marques for the UCD Full Stack Development Program - Database Module Assignment.
