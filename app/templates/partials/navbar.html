@@ -4,7 +4,7 @@
       {% set role_name = current_user.role.name|lower %}
       {% set home_url =
         url_for('contractor_routes.contractor_home') if role_name == 'contractor' else
-        url_for('property_manager_routes.manager_home') if role_name == 'property manager' else
+        url_for('manager_routes.manager_home') if role_name == 'property manager' else
         url_for('admin_routes.admin_dashboard') if role_name == 'admin' else
         url_for('auth.login')
       %}
@@ -31,10 +31,10 @@
             </li>
           {% elif role_name == 'property manager' %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('property_manager_routes.manager_home') }}">Work Orders</a>
+              <a class="nav-link" href="{{ url_for('manager_routes.manager_home') }}">Work Orders</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('property_manager_routes.create_work_order') }}">Create Work Order</a>
+              <a class="nav-link" href="{{ url_for('manager_routes.create_work_order') }}">Create Work Order</a>
             </li>
           {% elif role_name == 'contractor' %}
             <li class="nav-item">

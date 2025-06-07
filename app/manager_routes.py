@@ -13,10 +13,22 @@ manager_routes_bp = Blueprint('manager_routes', __name__)
 # ----------------------
 @manager_routes_bp.route('/manager/home')
 @login_required
-@permission_required("view_manager_home")
+@role_required(['Property Manager'])
+@permission_required("view_pm_dashboard")
 def manager_home():
-    work_orders = WorkOrder.query.all()
-    return render_template("admin/admin_work_orders.html", work_orders=work_orders)
+    from app.models import WorkOrder
+
+    full_name = current_user.full_name
+
+    work_orders = WorkOrder.query.filter(
+        WorkOrder.created_by == full_name
+    ).filter(
+        (WorkOrder.status == 'Open') | (WorkOrder.status == 'Returned to Creator')
+    ).all()
+
+    return render_template("manager/property_manager_work_orders.html", work_orders=work_orders)
+
+
 
 # ----------------------
 # Create Work Order

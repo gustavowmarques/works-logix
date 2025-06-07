@@ -42,7 +42,7 @@ class User(db.Model, UserMixin):
 
     # Role
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    role = db.relationship('Role', backref='users', lazy=True)
+    role = db.relationship('Role', backref='users')
 
     # Contractor-specific business type
     business_type_id = db.Column(db.Integer, db.ForeignKey('business_types.id'))
