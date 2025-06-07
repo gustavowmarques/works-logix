@@ -2,6 +2,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app.decorators import permission_required, role_required
 from app.models import db, WorkOrder, Client, User, Role, BusinessType
+from app.shared_routes import shared_routes_bp
+from datetime import datetime
+
 
 manager_routes_bp = Blueprint('manager_routes', __name__)
 
@@ -26,6 +29,16 @@ def create_work_order():
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
+
+        if not title:
+            flash('Title is required.', 'danger')
+            return redirect(request.url)
+
+        if not description:
+            flash('Description is required.', 'danger')
+            return redirect(request.url)
+
+
         client_id = request.form['client_id']
         business_type = request.form.get('business_type')
         preferred_contractor_id = request.form.get('preferred_contractor_id') or None
@@ -36,6 +49,9 @@ def create_work_order():
         occupant_phone = request.form.get('occupant_phone') or ''
 
         created_by = current_user.full_name or current_user.email
+
+        due_date_str = request.form.get('due_date')
+        due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date() if due_date_str else None
 
         new_order = WorkOrder(
             title=title,
@@ -48,6 +64,7 @@ def create_work_order():
             occupant_name=occupant_name,
             occupant_phone=occupant_phone,
             created_by=created_by,
+            due_date=due_date,
             status='Open'
         )
         db.session.add(new_order)
@@ -77,31 +94,22 @@ def create_work_order():
     )
 
 # ----------------------
-# View Single Work Order (optional)
+# View All Work Orders
 # ----------------------
-@manager_routes_bp.route('/manager/work-orders/<int:order_id>')
+@manager_routes_bp.route('/manager/work-orders', methods=['GET'], endpoint='view_all_work_orders')
+@login_required
+@permission_required("view_work_order")
+def view_all_work_orders():
+    work_orders = WorkOrder.query.all()
+    return render_template('manager/view_all_work_orders.html', work_orders=work_orders)
+
+# ----------------------
+# View A Single Work Order
+# ----------------------
+@manager_routes_bp.route('/manager/work-orders/<int:order_id>', methods=['GET'], endpoint='view_work_order')
 @login_required
 @permission_required("view_work_order")
 def view_work_order(order_id):
     work_order = WorkOrder.query.get_or_404(order_id)
-    return render_template('work_orders/view_work_order.html', work_order=work_order)
-
-# ----------------------
-# Edit Work Order (optional)
-# ----------------------
-@manager_routes_bp.route('/manager/work-orders/update/<int:order_id>', methods=['POST'], endpoint='edit_work_order')
-@login_required
-@permission_required("edit_work_order")
-def edit_work_order(order_id):
-    order = WorkOrder.query.get_or_404(order_id)
-    
-    # Get new data from form
-    order.title = request.form.get('title')
-    order.description = request.form.get('description')
-    order.status = request.form.get('status')
-    order.priority = request.form.get('priority')
-    
-    db.session.commit()
-    flash("Work order updated successfully.", "success")
-    return redirect(url_for('manager_routes.view_all_work_orders'))
+    return render_template('manager/view_work_order.html', work_order=work_order)
 

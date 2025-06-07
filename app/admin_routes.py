@@ -168,4 +168,3 @@ def register_user():
 
     return render_template('admin/register_user.html', form=form)
 
-

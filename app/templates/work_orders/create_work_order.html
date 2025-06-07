@@ -8,6 +8,21 @@
       <label for="title" class="form-label">Title</label>
       <input type="text" class="form-control" id="title" name="title" value="{{ order.title if order else '' }}" required>
     </div>
+    <div class="mb-3">
+      <label for="due_date">Due Date</label>
+       <input type="date" name="due_date" class="form-control">
+    </div>
+
+    <div class="mb-3">
+    <label for="status">Status</label>
+    </div>
+
+    <select name="status" class="form-control" required>
+      <option value="Open">Open</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Returned">Returned</option>
+      <option value="Completed">Completed</option>
+    </select>
 
     <div class="mb-3">
       <label for="description" class="form-label">Description</label>

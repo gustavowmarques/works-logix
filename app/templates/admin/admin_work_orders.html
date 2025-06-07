@@ -4,7 +4,10 @@
     <h2>All Work Orders</h2>
     {% set orders = work_orders %}
     {% include 'partials/work_orders_table.html' %}
+
     <h4>Returned Work Orders</h4>
-    {% include 'work_orders/returned_orders_table.html' with context %}
+    {% set orders = returned_orders %}
+    {% include 'work_orders/returned_orders_table.html' %}
+
 </div>
 {% endblock %}

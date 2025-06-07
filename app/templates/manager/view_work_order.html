@@ -10,7 +10,7 @@
             <p class="card-text"><strong>Client:</strong> {{ work_order.client.name }}</p>
             <p class="card-text"><strong>Created By:</strong> {{ work_order.created_by }}</p>
             <p class="card-text"><strong>Created At:</strong> {{ work_order.created_at }}</p>
-            <a href="{{ url_for('manager_routes.edit_work_order', order_id=work_order.id) }}" class="btn btn-primary">Edit</a>
+            <a href="{{ url_for('shared_routes.update_work_order', order_id=order.id) }}" class="btn btn-primary">Edit</a>
             <a href="{{ url_for('manager_routes.manager_home') }}" class="btn btn-secondary">Back</a>
         </div>
     </div>

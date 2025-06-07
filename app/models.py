@@ -158,3 +158,5 @@ class WorkOrder(db.Model):
     occupant_name = db.Column(db.String(120))
     occupant_apartment = db.Column(db.String(50))
     occupant_phone = db.Column(db.String(50))
+    due_date = db.Column(db.Date)
+
