@@ -93,6 +93,9 @@ def create_work_order():
         clients = Client.query.all()
     else:
         clients = Client.query.filter_by(assigned_pm_id=current_user.id).all()
+        # Fallback if none found
+        if not clients:
+            clients = Client.query.all()
 
     contractors = User.query.filter(User.role.has(name='Contractor')).all()
     contractor_categories = list({c.business_type.name for c in contractors if c.business_type})
