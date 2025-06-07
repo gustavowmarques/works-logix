@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Work Order Details</h2>
+
+    <table class="table table-bordered">
+        <tr>
+            <th>Title:</th>
+            <td>{{ order.title }}</td>
+        </tr>
+        <tr>
+            <th>Description:</th>
+            <td>{{ order.description }}</td>
+        </tr>
+        <tr>
+            <th>Status:</th>
+            <td>{{ order.status }}</td>
+        </tr>
+        <tr>
+            <th>Due Date:</th>
+            <td>{{ order.due_date.strftime('%Y-%m-%d') if order.due_date else '—' }}</td>
+        </tr>
+        <tr>
+            <th>Client:</th>
+            <td>{{ order.client_data.name }}</td>
+        </tr>
+        <tr>
+            <th>Created By:</th>
+            <td>{{ order.created_by }}</td>
+        </tr>
+    </table>
+
+    <a href="{{ url_for('contractor_routes.contractor_home') }}" class="btn btn-secondary">Back</a>
+</div>
+{% endblock %}
