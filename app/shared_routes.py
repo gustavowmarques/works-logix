@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app import db
 from app.models import WorkOrder
 from app.decorators import permission_required
+from datetime import datetime
 
 shared_routes_bp = Blueprint('shared_routes', __name__)
 
@@ -16,9 +17,19 @@ def update_work_order(order_id):
         order.title = request.form.get('title')
         order.description = request.form.get('description')
         order.status = request.form.get('status')
-        order.priority = request.form.get('priority')
+
+        due_date_str = request.form.get('due_date')
+        if due_date_str:
+            order.due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+        else:
+            order.due_date = None
         db.session.commit()
+
+        order.priority = request.form.get('priority')
+        
         flash("Work order updated successfully.", "success")
-        return redirect(url_for('admin.admin_work_orders'))  # Or 'manager_routes.view_all_work_orders'
+        return redirect(url_for('admin_routes.view_all_work_orders'))
+
+
 
     return render_template('shared/edit_work_order.html', work_order=order)

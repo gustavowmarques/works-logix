@@ -16,7 +16,7 @@ manager_routes_bp = Blueprint('manager_routes', __name__)
 @permission_required("view_manager_home")
 def manager_home():
     work_orders = WorkOrder.query.all()
-    return render_template("manager/home.html", work_orders=work_orders)
+    return render_template("admin/admin_work_orders.html", work_orders=work_orders)
 
 # ----------------------
 # Create Work Order
