@@ -1,16 +1,18 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
-from app.decorators import permission_required
+from app.decorators import permission_required, role_required
 from app.models import db, WorkOrder
+
 
 contractor_routes_bp = Blueprint('contractor_routes', __name__)
 
 @contractor_routes_bp.route('/contractor/home')
 @login_required
-@permission_required("view_contractor_home")
+@role_required(['Contractor'])
+@permission_required('contractor_home')
 def contractor_home():
     work_orders = WorkOrder.query.filter_by(contractor_id=current_user.id).all()
-    return render_template('contractor/home.html', work_orders=work_orders)
+    return render_template('contractor/contractor_home.html', work_orders=work_orders)
 
 @contractor_routes_bp.route('/contractor/reject/<int:order_id>', methods=['POST'])
 @login_required
