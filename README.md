@@ -18,6 +18,23 @@ Works Logix is a role-based property maintenance management platform designed fo
 
 [GitHub Repository](https://github.com/gustavowmarques/works-logix.git)
 
+## Credentials
+
+- The admin credentials are:
+admin@example.com
+Admin123!
+
+- Property Manager Credentials:
+pm@example.com
+Pm123!
+
+- Contractor:
+contractor@example.com
+Contractor123
+
+- plumber@example.com
+plumber123
+
 ## Entity Relationship Diagram (ERD)
 
 The ERD below outlines the core tables and relationships between Users, Clients, Work Orders, and Roles in the system:
